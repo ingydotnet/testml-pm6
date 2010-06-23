@@ -1,7 +1,7 @@
 module TestML::Parser::Grammar;
 use v6;
 
-sub grammar {
+sub grammar6 is export {
     return {
   'assertion_operation' => [
     '/$ws+/',
