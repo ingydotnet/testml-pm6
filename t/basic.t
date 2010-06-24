@@ -1,6 +1,8 @@
 use v6;
 use Test;
+plan 1;
 
-plan 2;
+BEGIN { @*INC.unshift: 'lib' }
+use TestML::Parser::Grammar;
 
-is 1, 2, 'numbers match';
+ok grammar6(), 'imported grammar6 from TestML::Parser::Grammar';
