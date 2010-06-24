@@ -92,7 +92,100 @@ grammar TestML {
         ]?
     }
 
-    regex test_section { <ANY>* }
+    regex test_section { [ <ws> | <test_statement> ]* }
+
+    regex ws { <SPACE> | <EOL> | <comment> }
+
+    regex test_statement { <test_expression> <assertion_expression>? ';' }
+
+    regex test_expression {
+        <sub_expression>
+        [
+            <!assertion_call>
+            <call_indicator>
+            <sub_expression>
+        ]*
+    }
+
+    regex sub_expression {
+        <transform_call> | <data_point> | <quoted_string> | <constant>
+    }
+
+    regex transform_call {
+        <transform_name> '(' <ws>* <argument_list> <ws>* ')'
+    }
+
+    regex transform_name { <user_transform> | <core_transform> }
+
+    regex user_transform { <LOWER> <WORD>* }
+
+    regex core_transform { <UPPER> <WORD>* }
+
+    regex call_indicator { <DOT> <ws>* | <ws>* <DOT> }
+
+    regex data_point { <STAR> <LOWER> <WORD>* }
+
+    regex constant { <UPPER> <WORD>* }
+
+    regex argument_list {
+        [ <argument> [ <ws>* ',' <ws>* <argument> ]* ]?
+    }
+
+    regex argument { <sub_expression> }
+
+    regex assertion_expression { <assertion_operation> | <assertion_call> }
+
+    regex assertion_operation {
+        <ws>+ <assertion_operator> <ws>+ <test_expression>
+    }
+
+    regex assertion_operator { '==' }
+
+    regex assertion_call {
+        <call_indicator>
+        <assertion_name>
+        '(' <ws>* <test_expression> <ws>* ')'
+    }
+
+    regex assertion_name { <UPPER>+ }
+
 
     regex data_section { <ANY>* }
+}
+
+grammar TestMLDataSection {
+    regex TOP { <data_section> }
+
+    regex ANY       { . }                 # Any unicode character
+    regex SPACE     { <[\ \t]> }          # A space or tab character
+    regex EOL       { \r? \n }            # A Unix or DOS line ending
+
+    regex data_section { <data_block>* }
+
+    regex data_block {
+        <block_header> [<blank_line> | <comment>]* <block_point>*
+    }
+
+    regex block_header {
+        <block_marker> [<SPACE>+ <block_label>]? <SPACE>* <EOL>
+    }
+
+    regex block_marker { '===' }
+
+    regex block_label {
+        [<ANY> _ [<SPACE> | <BREAK>]] [<NON_BREAK>* [<ANY> _ [<SPACE> | <BREAK>]]]?
+    }
+
+    regex block_point { <lines_point> | <phrase_point> }
+
+    regex lines_point {
+        <point_marker> <SPACE>+ <user_point> <SPACE>* <EOL> [<line> _ <block_header>]
+    }
+
+    regex phrase_point {
+        <point_marker> <SPACE>+ <user_point> ':'
+        [<SPACE> <NON_BREAK>*]? <EOL> <blank_line>*
+    }
+
+    regex point-marker { '---' }
 }
