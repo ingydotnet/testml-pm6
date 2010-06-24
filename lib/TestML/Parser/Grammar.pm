@@ -65,8 +65,7 @@ grammar TestML {
     regex single_quoted_string {
         <SINGLE>
         [
-            #[ <ANY> '-' [ <BREAK> | <BACK> | <SINGLE> ] ] |
-            <![\n\\']>
+            <![\n\\']> #[ <ANY> '-' [ <BREAK> | <BACK> | <SINGLE> ] ] |
             <BACK> <SINGLE> |
             <BACK> <BACK>
         ]*
@@ -76,7 +75,7 @@ grammar TestML {
     regex double_quoted_string {
         <DOUBLE>
         [
-            [ <ANY> '-' [ <BREAK> | <BACK> | <DOUBLE> ] ] |
+            <![\n\\"]> #[ <ANY> '-' [ <BREAK> | <BACK> | <DOUBLE> ] ] |
             <BACK> <DOUBLE> |
             <BACK> <BACK> |
             <BACK> <ESCAPE>
@@ -85,10 +84,10 @@ grammar TestML {
     }
 
     regex unquoted_string {
-        [ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
+        <![\ \\#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
         [
-            [ <ANY> '-' [ <BREAK> | <HASH> ] ]*
-            [ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
+            <![\n#]>*  #[ <ANY> '-' [ <BREAK> | <HASH> ] ]*
+            <![\ \n#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
         ]?
     }
 
