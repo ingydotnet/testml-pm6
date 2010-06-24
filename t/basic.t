@@ -21,5 +21,8 @@ my $testml = '
 ';
 
 
-#ok TestML::Parser::Grammar::TestML.parse($testml), 'match against grammar';
-ok TestML.parse($testml), 'match against grammar';
+my $match = TestML.parse($testml);
+ok $match, 'match against grammar';
+
+say "$_: [[" ~ $match<document>{$_} ~ "]]"
+    for < meta_section test_section data_section >;
