@@ -1,10 +1,6 @@
 use v6;
 use Test;
-<<<<<<< HEAD
-plan 5;
-=======
-plan 2;
->>>>>>> c3d51641821374b4142445da5fc811546ed542a8
+plan 6;
 
 BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser::Grammar;
@@ -51,6 +47,6 @@ is $match<document><meta_section><meta_testml_statement><testml_version>, '1.0',
 diag "$_: [[" ~ $match<document>{$_} ~ "]]"
     for < meta_section test_section data_section >;
 
-my $data_section = $match<document><data_section>;
-$match = TestMLDataSection.parse($data_section);
-ok $match, 'match against data grammar';
+my $data_section_match = $match<document><data_section>;
+$match = TestMLDataSection.parse($data_section_match);
+ok $match, 'data_section string matches against TestMLDataSection grammar';
