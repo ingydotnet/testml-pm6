@@ -108,10 +108,10 @@ grammar TestML {
     }
 
     regex test_section {
-        [ <ws> | <test_statement> ]*
+        [ <wspace> | <test_statement> ]*
     }
 
-    regex ws {
+    regex wspace {
         <SPACE> | <EOL> | <comment>
     }
 
@@ -133,7 +133,7 @@ grammar TestML {
     }
 
     regex transform_call {
-        <transform_name> '(' <ws>* <argument_list> <ws>* ')'
+        <transform_name> '(' <wspace>* <argument_list> <wspace>* ')'
     }
 
     regex transform_name {
@@ -149,7 +149,7 @@ grammar TestML {
     }
 
     regex call_indicator {
-        <DOT> <ws>* | <ws>* <DOT>
+        <DOT> <wspace>* | <wspace>* <DOT>
     }
 
     regex data_point {
@@ -161,7 +161,7 @@ grammar TestML {
     }
 
     regex argument_list {
-        [ <argument> [ <ws>* ',' <ws>* <argument> ]* ]?
+        [ <argument> [ <wspace>* ',' <wspace>* <argument> ]* ]?
     }
 
     regex argument {
@@ -173,7 +173,7 @@ grammar TestML {
     }
 
     regex assertion_operation {
-        <ws>+ <assertion_operator> <ws>+ <test_expression>
+        <wspace>+ <assertion_operator> <wspace>+ <test_expression>
     }
 
     regex assertion_operator {
@@ -182,7 +182,7 @@ grammar TestML {
 
     regex assertion_call {
         <call_indicator> <assertion_name>
-        '(' <ws>* <test_expression> <ws>* ')'
+        '(' <wspace>* <test_expression> <wspace>* ')'
     }
 
     regex assertion_name {
