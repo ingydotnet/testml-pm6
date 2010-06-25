@@ -9,7 +9,7 @@ grammar TestML {
     regex SPACE     { <[\ \t]>          } # A space or tab character
     regex BREAK     { \n                } # A newline character
     regex EOL       { \r? \n            } # A Unix or DOS line ending
-    regex NON_BREAK { .                 } # Any character except newline
+    regex NON_BREAK { \N                } # Any character except newline
     regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
     regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
     regex ALPHANUM  { <[A..Za..z0..9]>  } # ASCII alphanumeric character
@@ -64,6 +64,8 @@ grammar TestML {
 
     regex core_meta_keyword {
         Title | Data | Plan | BlockMarker | PointMarker
+        # rakudo not yet implemented
+        #< Title Data Plan BlockMarker PointMarker >
     }
 
     regex user_meta_keyword {
@@ -84,7 +86,7 @@ grammar TestML {
             <![\n\\']> #[ <ANY> '-' [ <BREAK> | <BACK> | <SINGLE> ] ]
             | <BACK> <SINGLE>
             | <BACK> <BACK>
-        ]*
+        ]*?
         <SINGLE>
     }
 
@@ -100,7 +102,7 @@ grammar TestML {
     }
 
     regex unquoted_string {
-        <![\ \\#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
+        <![\ \n\#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
         [
             <![\n#]>*  #[ <ANY> '-' [ <BREAK> | <HASH> ] ]*
             <![\ \n#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
