@@ -2,7 +2,9 @@ use v6;
 
 # http://perlcabal.org/syn/S05.html
 
-grammar TestML {
+our $ast;
+
+grammar TestMLGrammar {
     regex TOP { <document> }
 
     regex ANY       { . }                 # Any unicode character
@@ -43,7 +45,7 @@ grammar TestML {
         '%TestML:' <SPACE>+ <testml_version> [ <SPACE>+ <comment> | <EOL> ]
     }
 
-    regex testml_version { <DIGIT> <DOT> <DIGIT>+ }
+    regex testml_version { <.DIGIT> <.DOT> <.DIGIT>+ }
 
     regex meta_statement {
         '%' <meta_keyword> ':' <SPACE>+ <meta_value>
@@ -63,32 +65,39 @@ grammar TestML {
     regex quoted_string { <single_quoted_string> | <double_quoted_string> }
 
     regex single_quoted_string {
-        <SINGLE>
-        [
-            <![\n\\']> #[ <ANY> '-' [ <BREAK> | <BACK> | <SINGLE> ] ] |
-            <BACK> <SINGLE> |
-            <BACK> <BACK>
-        ]*
-        <SINGLE>
+        <.SINGLE>
+        [ <ANY>*? ]
+        <.SINGLE>
+#         <SINGLE>
+#         [
+#             [ <ANY> - [ <BREAK> | <BACK> | <SINGLE> ] ] |
+#             <BACK> <SINGLE> |
+#             <BACK> <BACK>
+#         ]*
+#         <SINGLE>
     }
 
     regex double_quoted_string {
         <DOUBLE>
-        [
-            <![\n\\"]> #[ <ANY> '-' [ <BREAK> | <BACK> | <DOUBLE> ] ] |
-            <BACK> <DOUBLE> |
-            <BACK> <BACK> |
-            <BACK> <ESCAPE>
-        ]*
+        <ANY>*?
         <DOUBLE>
+#         <DOUBLE>
+#         [
+#             <![\n\\"]> [ <ANY> - [ <BREAK> | <BACK> | <DOUBLE> ] ] |
+#             <BACK> <DOUBLE> |
+#             <BACK> <BACK> |
+#             <BACK> <ESCAPE>
+#         ]*
+#         <DOUBLE>
     }
 
     regex unquoted_string {
-        <![\ \\#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
-        [
-            <![\n#]>*  #[ <ANY> '-' [ <BREAK> | <HASH> ] ]*
-            <![\ \n#]> #[ <ANY> '-' [ <SPACE> | <BREAK> | <HASH> ] ]
-        ]?
+        NON_BREAK*
+#         <![\ \\#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
+#         [
+#             <![\n#]>*  [ <ANY> - [ <BREAK> | <HASH> ] ]*
+#             <![\ \n#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
+#         ]?
     }
 
     regex test_section { [ <ws> | <test_statement> ]* }
@@ -187,4 +196,31 @@ grammar TestMLDataSection {
     }
 
     regex point-marker { '---' }
+}
+
+class TestMLActions {
+    method meta_testml_statement($/) {
+        $ast<meta><data><TestML> = ~$<testml_version>;
+    }
+    method meta_statement($/) {
+        my $keyword = ~$<meta_keyword>;
+        $ast<meta><data>{$keyword} = ~$<meta_value>;
+    }
+}
+
+class Parser {
+    method parse($testml) {
+        $ast = {
+            meta => {
+                data => {
+                    BlockMarker => '===',
+                    PointMarker => '---',
+                }
+            },
+            test => {},
+            data => {},
+        };
+        TestMLGrammar.parse($testml, :actions(TestMLActions));
+        return $ast;
+    }
 }

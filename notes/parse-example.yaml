@@ -1,0 +1,79 @@
+%Plan: 4
+
+*foo == *bar;
+*bar == *foo;
+
+=== Foo for thought
+--- foo: O HAI
+--- bar: O HAI
+
+=== Bar the door
+--- bar
+O
+HAI
+--- foo
+O
+HAI
+
+--- !!perl/hash:TestML::Document
+data: !!perl/hash:TestML::Document::Data
+  blocks:
+    - !!perl/hash:TestML::Block
+      label: Foo for thought
+      points:
+        bar: O HAI
+        foo: O HAI
+    - !!perl/hash:TestML::Block
+      label: Bar the door
+      points:
+        bar: "O\nHAI\n"
+        foo: "O\nHAI\n"
+meta: !!perl/hash:TestML::Document::Meta
+  data:
+    BlockMarker: ===
+    Data:
+      - _
+    Plan: 4
+    PointMarker: ---
+    TestML: 1.0
+    Title: Ingy's Test
+tests: !!perl/hash:TestML::Document::Tests
+  statements:
+    - !!perl/hash:TestML::Statement
+      left_expression:
+        - !!perl/hash:TestML::Expression
+          transforms:
+            - !!perl/hash:TestML::Transform
+              args:
+                - foo
+              name: Point
+      points:
+        - bar
+        - foo
+      right_expression:
+        - !!perl/hash:TestML::Expression
+          transforms:
+            - !!perl/hash:TestML::Transform
+              args:
+                - bar
+              name: Point
+    - !!perl/hash:TestML::Statement
+      left_expression:
+        - !!perl/hash:TestML::Expression
+          transforms:
+            - !!perl/hash:TestML::Transform
+              args:
+                - bar
+              name: Point
+      points:
+        - bar
+        - foo
+      right_expression:
+        - !!perl/hash:TestML::Expression
+          transforms:
+            - !!perl/hash:TestML::Transform
+              args:
+                - foo
+              name: Point
+...
+

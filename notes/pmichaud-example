@@ -1,0 +1,32 @@
+pmichaud@plum:~/rakudo$ cat x
+grammar Expr {
+   rule TOP { <expr> }
+   rule expr { <integer> <addop> <integer> };
+   token addop { '+' | '-' }
+   token integer { \d+ }
+}
+
+
+class ExprActions {
+   method TOP($/) { make $<expr>.ast }
+
+   method expr($/) {
+       my $a = $<integer>[0].ast;
+       my $b = $<integer>[1].ast;
+       make $<addop> eq '+' ?? $a + $b !! $a - $b;
+   }
+
+   method integer($/) { make +$/; }
+}
+
+
+my $match = Expr.parse("3+4", :actions(ExprActions));
+say $match.ast;
+
+
+pmichaud@plum:~/rakudo$ ./perl6 x
+7
+pmichaud@plum:~/rakudo$
+
+-----------------------------------------
+
