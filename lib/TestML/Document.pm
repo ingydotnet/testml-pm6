@@ -1,15 +1,18 @@
 use v6;
 
+class TestML::Document::Meta { ... }
+class TestML::Document::Tests { ... }
+class TestML::Document::Data { ... }
 class TestML::Document;
 
-has $meta = TestML::Document::Meta.new;
-has $tests = TestML::Document::Tests.new;
-has $data = TestML::Document::Data.new;
+has $.meta = TestML::Document::Meta.new;
+has $.tests = TestML::Document::Tests.new;
+has $.data = TestML::Document::Data.new;
 
 #-----------------------------------------------------------------------------
 class TestML::Document::Meta;
 
-has $data = {
+has $.data = {
     TestML => '',
     Data => [],
     Title => '',
@@ -21,34 +24,34 @@ has $data = {
 #-----------------------------------------------------------------------------
 class TestML::Document::Tests;
 
-has $statements = [];
+has $.statements = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Statement;
 
-has $points = [];
-has $left_expression = [];
-has $assertion_operator;
-has $right_expression = [];
+has $.points = [];
+has $.left_expression = [];
+has $.assertion_operator;
+has $.right_expression = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Expression;
 
-has $transforms = [];
+has $.transforms = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Transform;
 
-has $name;
-has $args = [];
+has $.name;
+has $.args = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Document::Data;
 
-has $blocks = [];
+has $.blocks = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Block;
 
-has $label = '';
-has $points = {};
+has $.label = '';
+has $.points = {};

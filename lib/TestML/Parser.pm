@@ -1,8 +1,9 @@
 use v6;
+use TestML::Document;
 
 # http://perlcabal.org/syn/S05.html
 
-our $ast;
+our $doc;
 
 grammar TestMLGrammar {
     regex TOP { <document> }
@@ -252,26 +253,17 @@ grammar TestMLDataSection {
 
 class TestMLActions {
     method meta_testml_statement($/) {
-        $ast<meta><data><TestML> = ~$<testml_version>;
+        $doc.meta.data<TestML> = ~$<testml_version>;
     }
     method meta_statement($/) {
-        $ast<meta><data>{~$<meta_keyword>} = ~$<meta_value>;
+        $doc.meta.data{~$<meta_keyword>} = ~$<meta_value>;
     }
 }
 
 class Parser {
     method parse($testml) {
-        $ast = {
-            meta => {
-                data => {
-                    BlockMarker => '===',
-                    PointMarker => '---',
-                }
-            },
-            test => {},
-            data => {},
-        };
+        $doc = TestML::Document.new();
         TestMLGrammar.parse($testml, :actions(TestMLActions));
-        return $ast;
+        return $doc;
     }
 }

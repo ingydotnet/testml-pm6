@@ -22,7 +22,7 @@ my $testml = "
 
 my $match = Parser.parse($testml);
 ok $match, 'TestML string matches against TestML grammar';
-say $match.perl;
+say $match.meta.data.perl;
 
 # my $data_section = '
 # === Test mixed case string
