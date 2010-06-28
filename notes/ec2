@@ -1,1 +1,50 @@
 http://pmichaud.com/sandbox/ec2-ubuntu-web.txt
+
+Running Rakudo in EC2 instance for Ubuntu, web-version:
+
+1.  Sign up for Amazon's EC2 service ( http://aws.amazon.com/ec2/ )
+2.  After establishing an account, go to the EC2 console dashboard
+3.  Select "Launch Instance"
+4.  Select "Community AMIs"
+5.  In the search box, put either ami-d206eebb (32-bit, small, $0.085/hr) or
+    ami-5407ef3d (64-bit, large, $0.34/hr), click "Select" for the ubuntu
+    image that appears.
+6.  Confirm the instance type (small or large) that you want to launch,
+    click "Continue".
+7.  Click "Continue" again.
+8.  Create a keypair (or use an existing one if you have it), save
+    the resulting "<keypair>.pem" file to your local disk.
+    Change it to 600 permissions ("chmod 600 <keypair>.pem").
+9.  Accept the default Security Group (press "Continue")
+10. Launch the instance.  Billing starts now.  
+
+11. Return to the EC2 dashboard.
+12. Click on "Security Groups" in the left menu.
+13. Select the "default" security group
+14. Add "SSH" to the allowed protocols if it's not already there
+    14a. Change the "Custom..." button to "SSH"
+    14b. Click "Save"
+
+15. Select "Instances" from the left menu.
+    You should see an instance running or starting.  
+    If not, hit "Refresh" in the upper right corner.
+16. Get the Public DNS address of the instance (e.g., 
+    "ec2-174-129-139-29.compute-1.amazonaws.com")
+17. Log in to the instance via ssh:
+        $ ssh -i <keypair>.pem ubuntu@<public_dns>
+
+18. Once logged into the instance, install ubuntu packages needed for rakudo:
+        ubuntu@ip-...:~$  apt-get install git-core subversion libicu-dev libreadline5-dev
+
+19. Clone the Rakudo repository:
+        ubuntu@ip-...:~$ git clone http://github.com/rakudo/rakudo.git
+
+20. Build Rakudo:
+        ubuntu@ip-...:~$ cd rakudo
+        ubuntu@ip-...:~$ perl Configure.pl --gen-parrot
+        ubuntu@ip-...:~$ make
+
+21. Don't forget to terminate the instance when you're done (from the
+    instance dashboard).
+
+
