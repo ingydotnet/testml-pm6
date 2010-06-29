@@ -33,7 +33,7 @@ grammar TestMLAtoms {
 }
 
 grammar TestMLGrammar is TestMLAtoms {
-    regex TOP { <document> }
+    regex TOP { ^ <document> $ }
 
     regex document {
         <meta_section> <test_section> <data_section>?
@@ -202,10 +202,10 @@ grammar TestMLGrammar is TestMLAtoms {
 }
 
 grammar TestMLDataSection is TestMLAtoms {
-    regex TOP { <data_section> }
+    regex TOP { ^ <data_section> $ }
 
     regex data_section {
-        <data_block>* $
+        <data_block>*
     }
 
     regex data_block {
@@ -250,29 +250,26 @@ grammar TestMLDataSection is TestMLAtoms {
 }
 
 class TestMLActions {
+    ### Meta Section ###
+
     method meta_testml_statement($/) {
         $doc.meta.data<TestML> = ~$<testml_version>;
     }
+
     method meta_statement($/) {
-        $doc.meta.data{~$<meta_keyword>} = ~$<meta_value>;
+        $doc.meta.data{~$<meta_keyword>} = $<meta_value>.ast;
+    }
+
+    method meta_value($/) {
+        make $<quoted_string>.ast // $<unquoted_string>.ast;
     }
 
     method quoted_string($/) {
-        # this line doesn't get run does it? it does
-        say "quoted_string>> " ~ ~$/.substr(1, -1);
-
-        # I'm stuck...
-        #
-        # SO I think that line 15 of that Actions.pm is setting the .ast to a
-        # Pair, if I recall in p6 '=>' is Pair.new($k, $v) 
-        say "quoted_string [[1]]>> " ~ $/.ast;
         make ~$/.substr(1, -1);
-
-        say "quoted_string [[2]]>> " ~ $/.ast;
-        #make $<meta_value>.ast => ~$/.substr(1, -1);
-        # from http://github.com/moritz/json/blob/master/lib/JSON/Tiny/Actions.pm
-        # make $<string>.ast => $<value>.ast;
     }
+
+
+    ### Data Section ###
 
     method data_section($/) {
         $data = ~$/;
@@ -283,30 +280,8 @@ class TestMLActions {
 
         $block.label = ~$<block_label>;
 
-        say "points>>>" ~ $<phrase_point>.perl;
-
         $doc.data.blocks.push($block);
     }
-
-    method lines_point($/) {
-        say "lines_point>>>" ~ ~$/;
-    }
-
-    method phrase_point($/) {
-        say "phrase_point>>>" ~ ~$/;
-    }
-
-#     method block_marker($/) {
-#         my $block = TestML::Block.new;
-#         say $block.perl;
-#         $doc.data.blocks.push($block);
-#     }
-#     method block_label($/) {
-#         $doc.data.blocks[*-1].label = ~$/;
-#     }
-#     method block_header($/) {
-#         say "block_header>>>" ~ ~$/;
-#     }
 }
 
 class Parser {
@@ -316,12 +291,10 @@ class Parser {
         if (not $rc1) {
             fail "Parse TestML failed";
         }
-# #         say ">>>" ~ $data ~ "<<<";
-#         my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
-# #         say $rc2.perl;
-#         if (not $rc2) {
-#             fail "Parse TestML Data failed";
-#         }
+        my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
+        if (not $rc2) {
+            fail "Parse TestML Data failed";
+        }
         return $doc;
     }
 }
