@@ -1,0 +1,69 @@
+15:23 < ingy> q: is using 'ast' in grammars just a convention?
+15:23 <@moritz_> ingy: nope
+15:23 <@jnthn> ingy: No
+15:23 <@moritz_> ingy: make() sets the .ast
+15:23 <@jnthn> ingy: It gets what was stored by make
+15:23 <@moritz_> and $() defaults to $/.ast if it exists
+15:23 <@jnthn> gah, moritz_++ beats me twice. :-)
+15:23 < masak> I'm having lags, so if my jokes are not on time, that's why. totally.
+15:24 < ingy> haha
+15:24 < ingy> thanks guys
+15:24 < masak> ingy: I suspected as much. so maybe calling .ast will solve your problem.
+15:25 < ingy> one more q: how do I access [ ] groups from a action routine?
+15:25 <@moritz_> you don't
+15:25 <@moritz_> they don't capture
+15:25 <@moritz_> use ( ) if you want captures
+15:25 < ingy> masak: ashleydev has been helping me
+15:25 <@pmichaud> you can also alias
+15:25 <@pmichaud>     $<xyz>=[ ... ]
+15:25 < ingy> moritz_: btw, been studying your excellent JSON::Tiny
+15:25 <@moritz_> rakudo: $()
+15:26 <+p6eval> rakudo 451b40:  ( no output )
+15:26 < masak> ashleydev++
+15:26 < ingy> moritz_++
+15:26 <@pmichaud> use an alias to grab whatever is inside of [...]
+15:26 <@moritz_> ingy: glad it's useful
+15:26 < ingy> ossum!
+15:26 < masak> rakudo: "foo" ~~ /foo/; say "What kind of $()l am I?"
+15:26 <+p6eval> rakudo 451b40: OUTPUT?What kind of l am I?#?
+15:27 < masak> hm, shouldn't that say 'fool'?
+15:27 <@pmichaud> no
+15:27 <@pmichaud> spec was changed
+15:27 <@pmichaud> .ast is undef if not set.
+15:27 < ingy> so how do I access ( ) groupings from inside an Action method?
+15:27 <@pmichaud> (it used to be .Str if not set)
+15:27 < masak> ahah
+15:27 < masak> right.
+15:27 <@pmichaud> ingy: $/[0] $/[1] $[2]
+15:27 <@moritz_> pmichaud: $() should be $/.ast // $/.Str iirc
+15:27 <@pmichaud> er, $/[2]
+15:27 < masak> good. that's separation for you.
+15:27 < ingy> thanks
+15:27 <@pmichaud> moritz_: oh, that's possible, yes.
+15:27 -!- meteorjay [~idiotmax@core.dkqk.net] has quit Ping timeout: 264 seconds
+15:27 -!- drbean [~jim@203.74.245.164] has quit Ping timeout: 245 seconds
+15:27 < masak> rakudo: "foo" ~~ / foo {make "foo"} /; say "What kind of $()l am I?"
+15:27 <@moritz_> S05:2577:C<$()> is a shorthand for C<$($/.ast // ~$/)>.
+15:27 <+p6eval> rakudo 451b40: OUTPUT?What kind of l am I?#?
+15:27 < ingy> <3
+15:28 < masak> pmichaud: what about that?
+15:28 <@pmichaud> masak: that looks buggish.
+15:28  * masak submits rakudobug
+15:28 < masak> pmichaud: also, what moritz_ said.
+15:28 <@moritz_> $() is just coercion to item
+15:28 <@pmichaud> rakudo:  'foo' ~~ / foo { say $/ } /
+15:28 <+p6eval> rakudo 451b40: OUTPUT?foo#?
+15:28 <@moritz_> in rakudo
+15:28 <@pmichaud> ah
+15:28 <@jnthn> I think make not done inside an action method has always been buggy, fwiw.
+15:28 <@pmichaud> I think make is just broken in rakudo
+15:28 < masak> so, two bugs.
+15:29 <@jnthn> pmichaud: Yes, that matches my experience.
+15:29  * masak submits the other rakudobug
+15:29 <@pmichaud> nqp:  'foo' ~~ / foo { make 'foo' } /;  say($/.ast);
+15:29 <+p6eval> nqp: OUTPUT?Symbol '$/' not predeclared in <anonymous>#current instr.: 'parrot;PCT;HLLCompiler;panic' pc 152 (compilers/pct/src/PCT/HLLCompiler.pir:109)#?
+15:29 -!- drbean [~jim@sac.nuu.edu.tw] has joined #perl6
+15:29 <@pmichaud> nqp:  say(('foo' ~~ / foo { make 'foo' }/).ast)
+15:29 <+p6eval> nqp: OUTPUT?#?
+15:29 <@pmichaud> hmmm.
+
