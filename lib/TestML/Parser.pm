@@ -250,10 +250,30 @@ grammar TestMLDataSection is TestMLAtoms {
 }
 
 class TestMLActions {
-#     method quoted_string($/) {
-#         say "quoted_string>> " ~ ~$/.substr(1, -1);
-#         make ~$/.substr(1, -1);
-#     }
+    method meta_testml_statement($/) {
+        $doc.meta.data<TestML> = ~$<testml_version>;
+    }
+    method meta_statement($/) {
+        $doc.meta.data{~$<meta_keyword>} = ~$<meta_value>;
+    }
+
+    method quoted_string($/) {
+        # this line doesn't get run does it? it does
+        say "quoted_string>> " ~ ~$/.substr(1, -1);
+
+        # I'm stuck...
+        #
+        # SO I think that line 15 of that Actions.pm is setting the .ast to a
+        # Pair, if I recall in p6 '=>' is Pair.new($k, $v) 
+        say "quoted_string [[1]]>> " ~ $/.ast;
+        make ~$/.substr(1, -1);
+
+        say "quoted_string [[2]]>> " ~ $/.ast;
+        #make $<meta_value>.ast => ~$/.substr(1, -1);
+        # from http://github.com/moritz/json/blob/master/lib/JSON/Tiny/Actions.pm
+        # make $<string>.ast => $<value>.ast;
+    }
+
     method data_section($/) {
         $data = ~$/;
     }
@@ -287,13 +307,6 @@ class TestMLActions {
 #     method block_header($/) {
 #         say "block_header>>>" ~ ~$/;
 #     }
-
-    method meta_testml_statement($/) {
-        $doc.meta.data<TestML> = ~$<testml_version>;
-    }
-    method meta_statement($/) {
-        $doc.meta.data{~$<meta_keyword>} = ~$<meta_value>;
-    }
 }
 
 class Parser {
@@ -303,12 +316,12 @@ class Parser {
         if (not $rc1) {
             fail "Parse TestML failed";
         }
-#         say ">>>" ~ $data ~ "<<<";
-        my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
-#         say $rc2.perl;
-        if (not $rc2) {
-            fail "Parse TestML Data failed";
-        }
+# #         say ">>>" ~ $data ~ "<<<";
+#         my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
+# #         say $rc2.perl;
+#         if (not $rc2) {
+#             fail "Parse TestML Data failed";
+#         }
         return $doc;
     }
 }
