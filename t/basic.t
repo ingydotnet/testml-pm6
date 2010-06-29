@@ -20,9 +20,14 @@ my $testml = "
 --- output: I LOVE LUCY
 ";
 
-my $match = Parser.parse($testml);
-ok $match, 'TestML string matches against TestML grammar';
-say $match.meta.data.perl;
+try {
+    my $match = Parser.parse($testml);
+    ok $match, 'TestML string matches against TestML grammar';
+    say $match.meta.data.perl;
+    CATCH {
+        diag "TestML parse failed: $!";
+    }
+}
 
 # my $data_section = '
 # === Test mixed case string

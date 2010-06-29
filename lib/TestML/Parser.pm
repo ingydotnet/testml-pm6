@@ -4,15 +4,16 @@ use TestML::Document;
 # http://perlcabal.org/syn/S05.html
 
 our $doc;
+our $data;
 
-grammar TestMLGrammar {
-    regex TOP { <document> }
-
+grammar TestMLAtoms {
     regex ANY       { .                 } # Any unicode character
     regex SPACE     { <[\ \t]>          } # A space or tab character
     regex BREAK     { \n                } # A newline character
     regex EOL       { \r? \n            } # A Unix or DOS line ending
     regex NON_BREAK { \N                } # Any character except newline
+    regex NON_SPACE_BREAK
+                    { <![\ \n]>         } # Any character except space or newline
     regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
     regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
     regex ALPHANUM  { <[A..Za..z0..9]>  } # ASCII alphanumeric character
@@ -25,6 +26,14 @@ grammar TestMLGrammar {
     regex SINGLE    { "'"               } # A single quote character
     regex DOUBLE    { '"'               } # A double quote character
     regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs 
+    regex comment { <HASH> <line> }
+    regex line { <NON_BREAK>* <EOL> }
+    regex blank_line { <SPACE>* <EOL> }
+
+}
+
+grammar TestMLGrammar is TestMLAtoms {
+    regex TOP { <document> }
 
     regex document {
         <meta_section> <test_section> <data_section>?
@@ -34,18 +43,6 @@ grammar TestMLGrammar {
         [ <comment> | <blank_line> ]*
         <meta_testml_statement>
         [ <meta_statement> | <comment> | <blank_line> ]*
-    }
-
-    regex comment {
-        <HASH> <line>
-    }
-
-    regex line {
-        <NON_BREAK>* <EOL>
-    }
-
-    regex blank_line {
-        <SPACE>* <EOL>
     }
 
     regex meta_testml_statement {
@@ -204,15 +201,11 @@ grammar TestMLGrammar {
     }
 }
 
-grammar TestMLDataSection {
+grammar TestMLDataSection is TestMLAtoms {
     regex TOP { <data_section> }
 
-    regex ANY   { .        } # Any unicode character
-    regex SPACE { <[\ \t]> } # A space or tab character
-    regex EOL   { \r? \n   } # A Unix or DOS line ending
-
     regex data_section {
-        <data_block>*
+        <data_block>* $
     }
 
     regex data_block {
@@ -228,8 +221,9 @@ grammar TestMLDataSection {
     }
 
     regex block_label {
-        [ <ANY> _ [ <SPACE> | <BREAK> ] ]
-        [ <NON_BREAK>* [ <ANY> _ [ <SPACE> | <BREAK> ] ] ]?
+#          [ <ANY> - [ <SPACE> | <BREAK> ] ]
+#          [ <NON_BREAK>* [ <ANY> - [ <SPACE> | <BREAK> ] ] ]?
+         <NON_SPACE_BREAK> [ <NON_BREAK>* <NON_SPACE_BREAK> ]?
     }
 
     regex block_point {
@@ -237,13 +231,17 @@ grammar TestMLDataSection {
     }
 
     regex lines_point {
-        <point_marker> <SPACE>+ <user_point> <SPACE>* <EOL>
-        [ <line> _ <block_header> ]
+        <point_marker> <SPACE>+ <user_point_name> <SPACE>* <EOL>
+        <!before block_header> <line>
     }
 
     regex phrase_point {
-        <point_marker> <SPACE>+ <user_point> ':'
+        <point_marker> <SPACE>+ <user_point_name> ':'
         [ <SPACE> <NON_BREAK>* ]? <EOL> <blank_line>*
+    }
+    
+    regex user_point_name {
+        <LOWER> <WORD>*
     }
 
     regex point_marker {
@@ -252,6 +250,44 @@ grammar TestMLDataSection {
 }
 
 class TestMLActions {
+#     method quoted_string($/) {
+#         say "quoted_string>> " ~ ~$/.substr(1, -1);
+#         make ~$/.substr(1, -1);
+#     }
+    method data_section($/) {
+        $data = ~$/;
+    }
+
+    method data_block($/) {
+        my $block = TestML::Block.new;
+
+        $block.label = ~$<block_label>;
+
+        say "points>>>" ~ $<phrase_point>.perl;
+
+        $doc.data.blocks.push($block);
+    }
+
+    method lines_point($/) {
+        say "lines_point>>>" ~ ~$/;
+    }
+
+    method phrase_point($/) {
+        say "phrase_point>>>" ~ ~$/;
+    }
+
+#     method block_marker($/) {
+#         my $block = TestML::Block.new;
+#         say $block.perl;
+#         $doc.data.blocks.push($block);
+#     }
+#     method block_label($/) {
+#         $doc.data.blocks[*-1].label = ~$/;
+#     }
+#     method block_header($/) {
+#         say "block_header>>>" ~ ~$/;
+#     }
+
     method meta_testml_statement($/) {
         $doc.meta.data<TestML> = ~$<testml_version>;
     }
@@ -263,7 +299,16 @@ class TestMLActions {
 class Parser {
     method parse($testml) {
         $doc = TestML::Document.new();
-        TestMLGrammar.parse($testml, :actions(TestMLActions));
+        my $rc1 = TestMLGrammar.parse($testml, :actions(TestMLActions));
+        if (not $rc1) {
+            fail "Parse TestML failed";
+        }
+#         say ">>>" ~ $data ~ "<<<";
+        my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
+#         say $rc2.perl;
+        if (not $rc2) {
+            fail "Parse TestML Data failed";
+        }
         return $doc;
     }
 }

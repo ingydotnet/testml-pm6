@@ -53,5 +53,5 @@ has $.blocks = [];
 #-----------------------------------------------------------------------------
 class TestML::Block;
 
-has $.label = '';
+has $.label is rw = '';
 has $.points = {};
