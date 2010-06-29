@@ -98,9 +98,9 @@ regex quoted_string {
 }
 
 regex single_quoted_string {
-    <.SINGLE>
-    [ <ANY>*? ]
-    <.SINGLE>
+    <SINGLE>
+    <ANY>*?
+    <SINGLE>
 #         <SINGLE>
 #         [
 #             [ <ANY> - [ <BREAK> | <BACK> | <SINGLE> ] ] |
@@ -125,7 +125,12 @@ regex double_quoted_string {
 }
 
 regex unquoted_string {
-    NON_BREAK*
+    [
+        <!before <HASH>>
+        <!before <EOL>>
+        <!before <SPACE>>
+        <ANY>
+    ]+
 #         <![\ \\#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
 #         [
 #             <![\n#]>*  [ <ANY> - [ <BREAK> | <HASH> ] ]*
@@ -269,8 +274,8 @@ regex point_marker {
 
 
 class TestMLActions;
-### Meta Section ###
 
+### Meta Section ###
 method meta_testml_statement($/) {
     $doc.meta.data<TestML> = ~$<testml_version>;
 }
@@ -280,16 +285,20 @@ method meta_statement($/) {
 }
 
 method meta_value($/) {
-    make $<quoted_string>.ast // $<unquoted_string>.ast;
+    make $<quoted_string>
+        ?? $<quoted_string>.ast
+        !! $<unquoted_string>.ast;
 }
 
 method quoted_string($/) {
     make ~$/.substr(1, -1);
 }
 
+method unquoted_string($/) {
+    make ~$/;
+}
 
 ### Data Section ###
-
 method data_section($/) {
     $data = ~$/;
 }

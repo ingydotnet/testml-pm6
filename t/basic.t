@@ -7,7 +7,7 @@ use TestML::Parser;
 
 my $testml = "
 %TestML: 1.0
-%Plan: '42'
+%Plan: 42
 
 *input.uppercase() == *output;
 
