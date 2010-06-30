@@ -49,6 +49,20 @@ regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs
 regex comment { <HASH> <line> }
 regex line { <NON_BREAK>* <EOL> }
 regex blank_line { <SPACE>* <EOL> }
+regex unquoted_string {
+    [
+        <!before <SPACE>+ <HASH>>
+        <!before <SPACE>* <EOL>>
+        <ANY>
+    ]+
+#     [ <SPACE>+ [ <comment> | <EOL> ] ]
+#         <![\ \\#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
+#         [
+#             <![\n#]>*  [ <ANY> - [ <BREAK> | <HASH> ] ]*
+#             <![\ \n#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
+#         ]?
+}
+
 
 
 grammar TestMLGrammar is TestMLAtoms;
@@ -100,6 +114,12 @@ regex quoted_string {
 regex single_quoted_string {
     <SINGLE>
     <ANY>*?
+    [
+        <!before <HASH>>
+        <!before <EOL>>
+        <!before <SPACE>>
+        <ANY>
+    ]+
     <SINGLE>
 #         <SINGLE>
 #         [
@@ -122,20 +142,6 @@ regex double_quoted_string {
 #             <BACK> <ESCAPE>
 #         ]*
 #         <DOUBLE>
-}
-
-regex unquoted_string {
-    [
-        <!before <HASH>>
-        <!before <EOL>>
-        <!before <SPACE>>
-        <ANY>
-    ]+
-#         <![\ \\#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
-#         [
-#             <![\n#]>*  [ <ANY> - [ <BREAK> | <HASH> ] ]*
-#             <![\ \n#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
-#         ]?
 }
 
 regex test_section {
@@ -247,7 +253,7 @@ regex block_marker {
 regex block_label {
 #          [ <ANY> - [ <SPACE> | <BREAK> ] ]
 #          [ <NON_BREAK>* [ <ANY> - [ <SPACE> | <BREAK> ] ] ]?
-     <NON_SPACE_BREAK> [ <NON_BREAK>* <NON_SPACE_BREAK> ]?
+    <unquoted_string>
 }
 
 regex block_point {
@@ -255,21 +261,31 @@ regex block_point {
 }
 
 regex lines_point {
-    <point_marker> <SPACE>+ <user_point_name> <SPACE>* <EOL>
-    <!before block_header> <line>
+    <point_marker> <SPACE>+ <point_name> <SPACE>* <EOL>
+    <!before block_header>
+    <line>
 }
 
 regex phrase_point {
-    <point_marker> <SPACE>+ <user_point_name> ':'
-    [ <SPACE> <NON_BREAK>* ]? <EOL> <blank_line>*
-}
-
-regex user_point_name {
-    <LOWER> <WORD>*
+    <point_marker> <SPACE>+ <point_name> ':' <SPACE>+
+    (<unquoted_string>) <SPACE>* <EOL>
+    [<blank_line> | <comment>]*
 }
 
 regex point_marker {
     '---'
+}
+
+regex point_name {
+    <core_point_name> | <user_point_name>
+}
+
+regex core_point_name {
+    <UPPER> <WORD>*
+}
+
+regex user_point_name {
+    <LOWER> <WORD>*
 }
 
 
@@ -305,10 +321,20 @@ method data_section($/) {
 
 method data_block($/) {
     my $block = TestML::Block.new;
-
-    $block.label = ~$<block_label>;
+    $block.label = ~$<block_header><block_label>;
+    for $<block_point> -> $point {
+        my $name = ~$point<phrase_point><point_name>;
+        my $value = ~$point<phrase_point>[0];
+        $block.points{$name} = $value;
+    }
 
     $doc.data.blocks.push($block);
 }
+
+# method block_point($/) {
+#     make $<lines_point>
+#         ?? $<lines_point>
+#         !! $<phrase_point>;
+# }
 
 
