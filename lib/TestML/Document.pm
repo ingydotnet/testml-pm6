@@ -6,7 +6,7 @@ class TestML::Document::Data { ... }
 class TestML::Document;
 
 has $.meta = TestML::Document::Meta.new;
-has $.tests = TestML::Document::Tests.new;
+has $.test = TestML::Document::Tests.new;
 has $.data = TestML::Document::Data.new;
 
 #-----------------------------------------------------------------------------

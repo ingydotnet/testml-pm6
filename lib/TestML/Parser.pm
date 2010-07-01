@@ -314,6 +314,12 @@ method unquoted_string($/) {
     make ~$/;
 }
 
+### Test Section ###
+method test_statement($/) {
+    my $statement = TestML::Statement.new;
+    $doc.test.statements.push($statement);
+}
+
 ### Data Section ###
 method data_section($/) {
     $data = ~$/;
@@ -331,10 +337,49 @@ method data_block($/) {
     $doc.data.blocks.push($block);
 }
 
-# method block_point($/) {
-#     make $<lines_point>
-#         ?? $<lines_point>
-#         !! $<phrase_point>;
-# }
+
+# #-----------------------------------------------------------------------------
+# class TestML::Document::Tests;
+# 
+# has $.statements = [];
+# 
+# #-----------------------------------------------------------------------------
+# class TestML::Statement;
+# 
+# has $.points = [];
+# has $.left_expression = [];
+# has $.assertion_operator;
+# has $.right_expression = [];
+# 
+# #-----------------------------------------------------------------------------
+# class TestML::Expression;
+# 
+# has $.transforms = [];
+# 
+# #-----------------------------------------------------------------------------
+# class TestML::Transform;
+# 
+# has $.name;
+# has $.args = [];
 
 
+# tests: !!perl/hash:TestML::Document::Tests
+#   statements:
+#     - !!perl/hash:TestML::Statement
+#       left_expression:
+#         - !!perl/hash:TestML::Expression
+#           transforms:
+#             - !!perl/hash:TestML::Transform
+#               args:
+#                 - foo
+#               name: Point
+#       points:
+#         - bar
+#         - foo
+#       right_expression:
+#         - !!perl/hash:TestML::Expression
+#           transforms:
+#             - !!perl/hash:TestML::Transform
+#               args:
+#                 - bar
+#               name: Point

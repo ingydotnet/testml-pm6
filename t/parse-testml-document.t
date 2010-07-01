@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 12;
+plan 13;
 
 BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser;
@@ -29,6 +29,9 @@ try {
     is $match.meta.data<Plan>, '2', 'Plan parses';
     is $match.meta.data<Title>, 'O HAI TEST', 'Title parses';
     is $match.meta.data<PointMarker>, '+++', 'PointMarker parses';
+
+    is $match.test.statements.elems, 1, 'One test statement';
+
     is $match.data.blocks.elems, 2, 'Two data blocks';
     my ($block1, $block2) = $match.data.blocks;
     is $block1.label, 'Test mixed case string', 'Block 1 label ok';
@@ -41,6 +44,7 @@ try {
         diag "TestML parse failed: $!";
     }
 }
+
 
 # my $data_section = '
 # === Test mixed case string
