@@ -5,7 +5,7 @@ use TestML::Document;
 
 my $doc;
 my $data;
-my $points;
+my $statement;
 my @stack;
 
 grammar TestMLGrammar { ... }
@@ -15,7 +15,6 @@ grammar TestMLActions { ... }
 class Parser;
 method parse($testml) {
     $doc = TestML::Document.new();
-    $points = [];
     @stack = ();
     my $rc1 = TestMLGrammar.parse($testml, :actions(TestMLActions));
     if (not $rc1) {
@@ -29,6 +28,7 @@ method parse($testml) {
 }
 
 grammar TestMLBase;
+regex ALWAYS    { <?>               } # Always match
 regex ANY       { .                 } # Any unicode character
 regex SPACE     { <[\ \t]>          } # A space or tab character
 regex BREAK     { \n                } # A newline character
@@ -145,7 +145,12 @@ regex wspace {
 }
 
 regex test_statement {
+    <test_statement_start>
     <test_expression> <assertion_expression>? ';'
+}
+
+regex test_statement_start {
+    <ALWAYS>
 }
 
 regex test_expression {
@@ -329,10 +334,11 @@ method meta_value($/) {
 
 
 ### Test Section ###
+method test_statement_start($/) {
+    $statement = TestML::Statement.new;
+}
+
 method test_statement($/) {
-    my $statement = TestML::Statement.new;
-    $statement.points = $points;
-    $points = [];
     $doc.test.statements.push($statement);
 }
 
@@ -345,7 +351,7 @@ method sub_expression($/) {
 }
 
 method data_point($/) {
-    $points.push(~$0);
+    $statement.points.push(~$0);
     make ~$0;
 }
 
