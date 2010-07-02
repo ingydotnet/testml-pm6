@@ -1,15 +1,15 @@
 use v6;
 use Test;
-plan 13;
+plan 14;
 
 BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser;
 
-my $testml = "
+my $testml = '
 %TestML: 1.0
 %Plan: 2
 %Title: O HAI TEST
-%PointMarker: +++         #A line comment
+ %PointMarker: +++         #A line comment
 
 *input.uppercase() == *output;
 
@@ -20,7 +20,7 @@ my $testml = "
 === Test lower case string
 --- input: i love lucy
 --- output: I LOVE LUCY
-";
+';
 
 try {
     my $match = Parser.parse($testml);
@@ -31,6 +31,8 @@ try {
     is $match.meta.data<PointMarker>, '+++', 'PointMarker parses';
 
     is $match.test.statements.elems, 1, 'One test statement';
+    is $match.test.statements[0].points.join('-'), 'input-output',
+        'Point list is correct';
 
     is $match.data.blocks.elems, 2, 'Two data blocks';
     my ($block1, $block2) = $match.data.blocks;

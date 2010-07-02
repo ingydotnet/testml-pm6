@@ -1,0 +1,46 @@
+21:12 < ingy> is there a text that describes the difference between token rule and regex in grammars?
+21:12 <@sorear> S05
+21:12 < ingy> where
+21:12 < ingy> I just read it
+21:13 <@pmichaud> ingy: regex is a normal regex -- it automatically backtracks on various quantifiers
+21:13 <@pmichaud> ingy:  token is a regex where backtracking is disabled by default
+21:13 <@pmichaud> ingy:  rule is a token (backtracking disabled) where whitespace in the pattern corresponds to intertoken whitespace in the match
+21:14 <@pmichaud> rakudo:  say  'aaaaa' ~~ regex { a* a }   # matches
+21:14 <+p6eval> rakudo 7df2c2: OUTPUT?aaaaa#?
+21:14 <@pmichaud> rakudo:  say  'aaaaa' ~~ token { a* a }   # doesn't match
+21:14 <+p6eval> rakudo 7df2c2: OUTPUT?#?
+21:16 < ingy> pmichaud: thank you
+21:16 <@pmichaud> rakudo:  say "you're welcome" ~~ rule { \S* \S* }
+21:16 <+p6eval> rakudo 7df2c2: OUTPUT?you're welcome#?
+21:16 <@pmichaud> note that in the rule I didn't have to specify anything to match the whitespace
+21:17 < ash_> does rule chomp front and back? 
+21:17 < ingy> rakudo:  say "you're      welcome" ~~ rule { \S* \S* }
+21:17 <+p6eval> rakudo 7df2c2: OUTPUT?you're      welcome#?
+21:17 <@pmichaud> rakudo:  say "    you're  \n   welcome     " ~~ rule { \S* \S* }
+21:17 <+p6eval> rakudo 7df2c2: OUTPUT?    you're  #   welcome     #?
+21:18 < ingy> rakudo:  say "you'rewelcome" ~~ rule { \S* \S* }
+21:18 <+p6eval> rakudo 7df2c2: OUTPUT?you'rewelcome#?
+21:18 <@pmichaud> + is more interesting here
+21:18 <@pmichaud> rakudo:  say "you'rewelcome" ~~ rule { \S+ \S+ }  # fails
+21:18 <+p6eval> rakudo 7df2c2: OUTPUT?#?
+21:18 < ingy> ah
+21:19 <@pmichaud> ingy: rule { \S+ \S+ }  is the same as   token { <.ws> \S+ <.ws> \S+ <.ws> }
+21:19 < ingy> ahrakudo:  say "you're  welcome" ~~ rule { \S+ \S+ }
+21:20 < ingy> rakudo:  say "you're  welcome" ~~ rule { \S+ \S+ }
+21:20 <+p6eval> rakudo 7df2c2: OUTPUT?you're  welcome#?
+21:20 < ingy> pmichaud: maybe not :)
+21:20 <@pmichaud> ?
+21:20 < ingy> isn't that <.ws>+
+21:20 <@pmichaud> <.ws>  already allows for multiple whitespace characters
+21:21 < ingy> I see
+21:21 <@pmichaud> it's basically defined as   { <!ww> \s* }
+21:21  * ingy backs down
+21:21 <@pmichaud> where <ww> is true when in the middle of a word
+21:21 < ingy> ;)
+21:21 <@pmichaud> (i.e., between two word characters)
+21:22 <@pmichaud> so, <.ws> requires at least one space between two word characters, and zero or more spaces anywhere else
+21:22 < ingy> ETOOMUCHPOWER!!
+21:22 < ingy> ;)
+21:22  * ingy gets back to ascending the learning curve
+21:23 <@pmichaud> I should write a canonical blog post about regex, token, and rule -- it's a FAQ
+

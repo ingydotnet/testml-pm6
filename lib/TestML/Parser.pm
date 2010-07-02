@@ -3,10 +3,10 @@ module TestML::Parser;
 
 use TestML::Document;
 
-# http://perlcabal.org/syn/S05.html
-
-our $doc;
-our $data;
+my $doc;
+my $data;
+my $points;
+my @stack;
 
 grammar TestMLGrammar { ... }
 grammar TestMLDataSection { ... }
@@ -15,6 +15,8 @@ grammar TestMLActions { ... }
 class Parser;
 method parse($testml) {
     $doc = TestML::Document.new();
+    $points = [];
+    @stack = ();
     my $rc1 = TestMLGrammar.parse($testml, :actions(TestMLActions));
     if (not $rc1) {
         fail "Parse TestML failed";
@@ -26,7 +28,7 @@ method parse($testml) {
     return $doc;
 }
 
-grammar TestMLAtoms;
+grammar TestMLBase;
 regex ANY       { .                 } # Any unicode character
 regex SPACE     { <[\ \t]>          } # A space or tab character
 regex BREAK     { \n                } # A newline character
@@ -46,103 +48,93 @@ regex BACK      { '\\'              } # A backslash character
 regex SINGLE    { "'"               } # A single quote character
 regex DOUBLE    { '"'               } # A double quote character
 regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs 
-regex comment { <HASH> <line> }
-regex line { <NON_BREAK>* <EOL> }
-regex blank_line { <SPACE>* <EOL> }
-regex unquoted_string {
+
+token comment { <HASH> <line> }
+token line { <NON_BREAK>* <EOL> }
+token blank_line { <SPACE>* <EOL> }
+token unquoted_string {
     [
         <!before <SPACE>+ <HASH>>
         <!before <SPACE>* <EOL>>
         <ANY>
     ]+
-#     [ <SPACE>+ [ <comment> | <EOL> ] ]
-#         <![\ \\#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
-#         [
-#             <![\n#]>*  [ <ANY> - [ <BREAK> | <HASH> ] ]*
-#             <![\ \n#]> [ <ANY> - [ <SPACE> | <BREAK> | <HASH> ] ]
-#         ]?
+}
+token single_quoted_string {
+    \' ~ \' [ <sq_string> | \\ <sq_escape> ]*
+}
+token sq_string {
+    [
+        <!before \n>
+        <!before \\>
+        <!before \'>
+        <ANY>
+    ]+
+}
+token sq_escape {
+    <['\\]>
+}
+token double_quoted_string {
+    \" ~ \" [ <dq_string> | \\ <dq_escape> ]*
+}
+token dq_string {
+    [
+        <!before \t>
+        <!before \n>
+        <!before \\>
+        <!before \">
+        <ANY>
+    ]+
+}
+token dq_escape {
+    <["\\nrt]>
 }
 
 
+grammar TestMLGrammar is TestMLBase;
+rule TOP {^ <document> $}
 
-grammar TestMLGrammar is TestMLAtoms;
-regex TOP { ^ <document> $ }
-
-regex document {
+rule document {
     <meta_section> <test_section> <data_section>?
 }
 
-regex meta_section {
+rule meta_section {
     [ <comment> | <blank_line> ]*
     <meta_testml_statement>
     [ <meta_statement> | <comment> | <blank_line> ]*
 }
 
 regex meta_testml_statement {
-    '%TestML:' <SPACE>+ <testml_version> [ <SPACE>+ <comment> | <EOL> ]
+    '%TestML:' <SPACE>+ <testml_version>
+    [ <SPACE>+ <comment> | <EOL> ]
 }
 
-regex testml_version { <.DIGIT> <.DOT> <.DIGIT>+ }
+token testml_version { <.DIGIT> <.DOT> <.DIGIT>+ }
 
 regex meta_statement {
     '%' <meta_keyword> ':' <SPACE>+ <meta_value>
     [ <SPACE>+ <comment> | <EOL> ]
 }
 
-regex meta_keyword {
+token meta_keyword {
     <core_meta_keyword> | <user_meta_keyword>
 }
 
-regex core_meta_keyword {
+token core_meta_keyword {
     Title | Data | Plan | BlockMarker | PointMarker
-    # rakudo not yet implemented
-    #< Title Data Plan BlockMarker PointMarker >
 }
 
-regex user_meta_keyword {
+token user_meta_keyword {
     <LOWER> <WORD>*
 }
 
-regex meta_value {
+token meta_value {
     <quoted_string> | <unquoted_string>
 }
 
-regex quoted_string {
+token quoted_string {
     <single_quoted_string> | <double_quoted_string>
 }
 
-regex single_quoted_string {
-    <SINGLE>
-    <ANY>*?
-    [
-        <!before <HASH>>
-        <!before <EOL>>
-        <!before <SPACE>>
-        <ANY>
-    ]+
-    <SINGLE>
-#         <SINGLE>
-#         [
-#             [ <ANY> - [ <BREAK> | <BACK> | <SINGLE> ] ] |
-#             <BACK> <SINGLE> |
-#             <BACK> <BACK>
-#         ]*
-#         <SINGLE>
-}
-
-regex double_quoted_string {
-    <DOUBLE>
-    <ANY>*?
-    <DOUBLE>
-#         <DOUBLE>
-#         [
-#             <![\n\\"]> [ <ANY> - [ <BREAK> | <BACK> | <DOUBLE> ] ] |
-#             <BACK> <DOUBLE> |
-#             <BACK> <BACK> |
-#             <BACK> <ESCAPE>
-#         ]*
-#         <DOUBLE>
-}
 
 regex test_section {
     [ <wspace> | <test_statement> ]*
@@ -190,7 +182,7 @@ regex call_indicator {
 }
 
 regex data_point {
-    <STAR> <LOWER> <WORD>*
+    <.STAR> ( <.LOWER> <.WORD>* )
 }
 
 regex constant {
@@ -231,7 +223,7 @@ regex data_section {
 }
 
 
-grammar TestMLDataSection is TestMLAtoms;
+grammar TestMLDataSection is TestMLBase;
 regex TOP { ^ <data_section> $ }
 
 regex data_section {
@@ -291,6 +283,35 @@ regex user_point_name {
 
 class TestMLActions;
 
+### Base Section ###
+
+method quoted_string($/) {
+    make ~$/.substr(1, -1);
+}
+
+method unquoted_string($/) {
+    make ~$/;
+}
+
+method dq_string($/) { make ~$/ }
+
+method dq_escape($/) {
+    my %h = '\\' => "\\",
+            'n'  => "\n",
+            't'  => "\t",
+            'f'  => "\f",
+            'r'  => "\r";
+    make %h{~$/};
+}
+
+method sq_string($/) { make ~$/ }
+
+method sq_escape($/) {
+    my %h = '\\' => "\\",
+    make %h{~$/};
+}
+
+
 ### Meta Section ###
 method meta_testml_statement($/) {
     $doc.meta.data<TestML> = ~$<testml_version>;
@@ -306,18 +327,30 @@ method meta_value($/) {
         !! $<unquoted_string>.ast;
 }
 
-method quoted_string($/) {
-    make ~$/.substr(1, -1);
-}
-
-method unquoted_string($/) {
-    make ~$/;
-}
 
 ### Test Section ###
 method test_statement($/) {
     my $statement = TestML::Statement.new;
+    $statement.points = $points;
+    $points = [];
     $doc.test.statements.push($statement);
+}
+
+method sub_expression($/) {
+    my $ast = $<transform_call> ?? $<transform_call>.ast !!
+        $<data_point> ?? $<data_point>.ast !!
+        $<quoted_string> ?? $<quoted_string>.ast !!
+        $<constant>.ast;
+    make $ast;
+}
+
+method data_point($/) {
+    $points.push(~$0);
+    make ~$0;
+}
+
+method transform_call($/) {
+    make $0;
 }
 
 ### Data Section ###
