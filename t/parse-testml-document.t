@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 14;
+plan 21;
 
 BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser;
@@ -31,8 +31,23 @@ try {
     is $match.meta.data<PointMarker>, '+++', 'PointMarker parses';
 
     is $match.test.statements.elems, 1, 'One test statement';
-    is $match.test.statements[0].points.join('-'), 'input-output',
+    my $statement = $match.test.statements[0];
+    is $statement.points.join('-'), 'input-output',
         'Point list is correct';
+
+    is $statement.left_expression[*-1].transforms.elems, 2, 'Left side has two parts';
+    is $statement.left_expression[*-1].transforms[0].name, 'Point',
+        'First sub is a Point';
+    is $statement.left_expression[*-1].transforms[0].args[0], 'input',
+        'Point name is "input"';
+    is $statement.left_expression[*-1].transforms[1].name, 'uppercase',
+        'Second sub is "uppercase"';
+
+    is $statement.right_expression[*-1].transforms.elems, 1, 'Right side has one part';
+    is $statement.right_expression[*-1].transforms[0].name, 'Point',
+        'First sub is a Point';
+    is $statement.right_expression[*-1].transforms[0].args[0], 'output',
+        'Point name is "output"';
 
     is $match.data.blocks.elems, 2, 'Two data blocks';
     my ($block1, $block2) = $match.data.blocks;
@@ -46,33 +61,3 @@ try {
         diag "TestML parse failed: $!";
     }
 }
-
-
-# my $data_section = '
-# === Test mixed case string
-# --- input: I Like Pie
-# --- output: I LIKE PIE
-# 
-# === Test lower case string
-# --- input: i love lucy
-# --- output: I LOVE LUCY
-# ';
-
-# is $match<document><meta_section>.trim, '%TestML: 1.0',
-#     'meta_section parses';
-# 
-# is $match<document><test_section>.trim, '*input.uppercase() == *output;',
-#     'test_section parses';
-# 
-# is $match<document><data_section>.trim, $data_section.trim,
-#     'data_section parses';
-# 
-# is $match<document><meta_section><meta_testml_statement><testml_version>, '1.0',
-#     'testml_version parses';
-# 
-# diag "$_: [[" ~ $match<document>{$_} ~ "]]"
-#     for < meta_section test_section data_section >;
-# 
-# my $data_section_match = $match<document><data_section>;
-# $match = TestMLDataSection.parse($data_section_match);
-# ok $match, 'data_section string matches against TestMLDataSection grammar';

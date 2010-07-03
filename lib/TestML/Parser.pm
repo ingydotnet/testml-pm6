@@ -336,27 +336,33 @@ method meta_value($/) {
 ### Test Section ###
 method test_statement_start($/) {
     $statement = TestML::Statement.new;
+    my $expression = TestML::Expression.new;
+    $statement.left_expression.push($expression);
+    @stack.push($expression);
 }
 
 method test_statement($/) {
     $doc.test.statements.push($statement);
 }
 
-method sub_expression($/) {
-    my $ast = $<transform_call> ?? $<transform_call>.ast !!
-        $<data_point> ?? $<data_point>.ast !!
-        $<quoted_string> ?? $<quoted_string>.ast !!
-        $<constant>.ast;
-    make $ast;
-}
-
 method data_point($/) {
-    $statement.points.push(~$0);
-    make ~$0;
+    my $point_name = ~$0;
+    my $transform = TestML::Transform.new(name => 'Point', args => [$point_name]);
+    @stack[*-1].transforms.push($transform);
+    $statement.points.push($point_name);
 }
 
 method transform_call($/) {
-    make $0;
+    my $transform_name = ~$<transform_name>;
+    my $transform = TestML::Transform.new(name => $transform_name);
+    @stack[*-1].transforms.push($transform);
+}
+
+method assertion_operator($/) {
+    @stack.pop();
+    my $expression = TestML::Expression.new;
+    $statement.right_expression.push($expression);
+    @stack.push($expression);
 }
 
 ### Data Section ###
@@ -375,50 +381,3 @@ method data_block($/) {
 
     $doc.data.blocks.push($block);
 }
-
-
-# #-----------------------------------------------------------------------------
-# class TestML::Document::Tests;
-# 
-# has $.statements = [];
-# 
-# #-----------------------------------------------------------------------------
-# class TestML::Statement;
-# 
-# has $.points = [];
-# has $.left_expression = [];
-# has $.assertion_operator;
-# has $.right_expression = [];
-# 
-# #-----------------------------------------------------------------------------
-# class TestML::Expression;
-# 
-# has $.transforms = [];
-# 
-# #-----------------------------------------------------------------------------
-# class TestML::Transform;
-# 
-# has $.name;
-# has $.args = [];
-
-
-# tests: !!perl/hash:TestML::Document::Tests
-#   statements:
-#     - !!perl/hash:TestML::Statement
-#       left_expression:
-#         - !!perl/hash:TestML::Expression
-#           transforms:
-#             - !!perl/hash:TestML::Transform
-#               args:
-#                 - foo
-#               name: Point
-#       points:
-#         - bar
-#         - foo
-#       right_expression:
-#         - !!perl/hash:TestML::Expression
-#           transforms:
-#             - !!perl/hash:TestML::Transform
-#               args:
-#                 - bar
-#               name: Point

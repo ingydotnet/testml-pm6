@@ -29,7 +29,7 @@ has $.statements = [];
 #-----------------------------------------------------------------------------
 class TestML::Statement;
 
-has $.points is rw = [];
+has $.points = [];
 has $.left_expression = [];
 has $.assertion_operator;
 has $.right_expression = [];
