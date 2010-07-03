@@ -1,11 +1,9 @@
-class TestML::Runner::TAP;
 use v6;
+class TestML::Runner::TAP is TestML::Runner;
 
-use Test::Builder;
+use Test;
 
-has $test_builder = Test::Builder.new();
-
-method init_bridge () {
+method init_bridge ($self) {
     @*INC.unshift: 't', 'lib';
 
     my $class = $self.bridge;
@@ -22,18 +20,18 @@ method init_bridge () {
     return $class.new();
 }
 
-method title () {
+method title ($self) {
     if $self.doc.meta.data<Title> -> $title {
         say "=== $title ===";
     }
 }
 
-method plan_begin () {
+method plan_begin ($self, $tests) {
     if $self.doc.meta.data<Plan> -> $tests {
-        $self.test_builder.plan(tests => $tests);
+        Test::plan($tests);
     }
     else {
-        $self.test_builder.no_plan();
+        Test::plan(*);
     }
 }
 
@@ -43,6 +41,6 @@ method plan_end () {
 # TODO - Refactor so that standard lib finds this comparison through EQ
 method do_test ($operator, $left, $right, $label) {
     if ($operator eq 'EQ') {
-        $self.test_builder.is_eq($left.value, $right.value, $label);
+        Test::is($left.value, $right.value, $label);
     }
 }

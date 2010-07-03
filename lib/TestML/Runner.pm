@@ -6,11 +6,11 @@ use v6;
 use TestML::Document;
 use TestML::Parser;
 
-has $bridge;
-has $document;
-has $base;
-has $doc    = $self.parse();
-has $Bridge = $self.init_bridge;
+has $.bridge;
+has $.document;
+has $.base;
+has $.doc    = $self.parse();
+has $.Bridge = $self.init_bridge;
 
 method setup {
     fail "\nDon't use TestML::Runner directly.\nUse an appropriate subclass like TestML::Runner::TAP.\n";

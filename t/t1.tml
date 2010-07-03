@@ -1,0 +1,13 @@
+%TestML: 1.0
+%Plan: 2
+%Title: O HAI TEST
+
+*input.uppercase() == *output;
+
+=== Test mixed case string
+--- input: I Like Pie
+--- output: I LIKE PIE
+
+=== Test lower case string
+--- input: i love lucy
+--- output: I LOVE LUCY
