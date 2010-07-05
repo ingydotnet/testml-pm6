@@ -18,11 +18,11 @@ method parse($testml) {
     @stack = ();
     my $rc1 = TestMLGrammar.parse($testml, :actions(TestMLActions));
     if (not $rc1) {
-        fail "Parse TestML failed";
+        die "Parse TestML failed";
     }
     my $rc2 = TestMLDataSection.parse($data, :actions(TestMLActions));
     if (not $rc2) {
-        fail "Parse TestML Data failed";
+        die "Parse TestML Data failed";
     }
     return $doc;
 }

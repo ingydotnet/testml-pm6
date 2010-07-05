@@ -1,0 +1,26 @@
+15:26  * ingy just spent 30+ mins debugging something and has a question...
+15:26 < lue> I'm an idiot. I forgot to run `make install' :)
+15:27 < lue> that's why Test.pir failed. *embarrased smile*
+15:28 <@ingy> I used module Xxx (containing a class Xxx). when I say my $class = eval('Xxx'); and then if ($class) { ... }; the 'if' is not true
+15:29 <@ingy> even though I'm pretty sure $class contains a class object
+15:29 <@ingy> ~$class eq 'Xxx()'
+15:29 <@jnthn> ingy: Type objects are always undefined
+15:29 <@jnthn> ingy: And truth defaults to definedness
+15:30 <@jnthn> rakudo: if Int { say "oops" }
+15:30 <+p6eval> rakudo 1e7012:  ( no output )
+15:30 < ash_> jnthn: is there something you can compare it to to see if its a class? 
+15:30 <@ingy> does that make sense?
+15:31 <+p6eval> rakudo 1e7012: OUTPUT«===SORRY!===␤Missing block at line 11, near ""␤»
+15:31 <@ingy> maybe a better question is how do I introspect modules (for things like classes)?
+15:31 <@jnthn> ash_: Not really 
+15:32 <@ingy> I hate being a newb
+15:32 <@jnthn> Looking at the metaclass is more useful probably
+15:32 <@jnthn> rakudo: say Int.HOW ~~ ClassHOW
+15:32 <+p6eval> rakudo 1e7012: OUTPUT«1␤»
+15:32 <@ingy> but at least I'm a newb with an agenda :D
+15:32 < ash_> rakudo: role Foo { }; say Foo ~~ Role 
+15:32 <+p6eval> rakudo 1e7012: OUTPUT«1␤»
+15:32 <@jnthn> ingy: Introspection is done by looking at the metaclass
+15:32 < ash_> would be cool if there was a Class like there is Role 
+15:32 <@ingy> :)
+

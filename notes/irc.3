@@ -1,0 +1,21 @@
+14:12 <@ingy> if I have $module, $class and $method string variables, how can I load $module, lookup $method and call it (if it exists) on $class?
+14:14 <@ingy> I think I got most of it, except the call part
+14:14 <@jnthn> you can do e.g. $obj."$method_name"() for that part
+14:15 < ash_> isn't it like ::<$module> to get the module? 
+14:22 < ash_> rakudo: my $a = 'a b c'; $a.::Str::say
+14:22 <+p6eval> rakudo 1e7012: OUTPUT«a b c␤»
+14:22 < ash_> ingy: you can use that too, it seems 
+14:23 < ash_> ingy: $obj.::$module::$method 
+14:24 <@ingy> this worked: $class.can($method_name)($class);
+14:24 <@ingy> this failed: $class.$method_name();
+14:24 <@jnthn> ingy: I said $class."$method_name"()
+14:24 <@pmichaud> so, testing the type of the PMC only helps with objectrefs to PMCs.  It doesn't help with objectrefs to subclasses of PMCs
+14:24 <@pmichaud> (quotes needed)
+14:25 <@ingy> ?!
+14:25 <@jnthn> ingy: Without the quotes it means "I have a code object"
+14:25 <@pmichaud> $class.$method()   is different from $class."$method"()
+14:25 <@pmichaud> the first attempts to apply $method to $class
+14:25 <@pmichaud> the second looks up a method named "$method" in the class and invokes that
+14:26 <@ingy> I save all these crazy chatlogs. Someday I'll write a book.
+14:26 <@ingy> or maybe a chapter in yours :P
+

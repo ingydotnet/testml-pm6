@@ -1,144 +1,149 @@
 class TestML::Runner;
+class TestML::Context { ... }
 use v6;
-# Base is just my cheap Moose...
-# use TestML::Base -base;
 
 use TestML::Document;
 use TestML::Parser;
 
 has $.bridge;
 has $.document;
-has $.base;
-has $.doc    = $self.parse();
-has $.Bridge = $self.init_bridge;
+has $.base = 't';
+has $.doc = self.parse();
+has $.Bridge = self.init_bridge;
 
 method setup {
-    fail "\nDon't use TestML::Runner directly.\nUse an appropriate subclass like TestML::Runner::TAP.\n";
+    die "\nDon't use TestML::Runner directly.\nUse an appropriate subclass like TestML::Runner::TAP.\n";
 }
 
 method init_bridge {
-    fail "'init_bridge' must be implemented in subclass";
+    die "'init_bridge' must be implemented in subclass";
 }
 
 method run () {
-    # TODO $self.base(($*PROGRAM_NAME ~~ /(.*)'/'/) ?? $<0> !! '.');
-    $self.title();
-    $self.plan_begin();
+    # TODO self.base(($*PROGRAM_NAME ~~ /(.*)'/'/) ?? $<0> !! '.');
+    self.title();
+    self.plan_begin();
 
-    for $self.doc.tests.statements -> $statement {
+    for self.doc.test.statements -> $statement {
         my $points = $statement.points;
         if not $points.elems {
-            my $left = $self.evaluate_expression($statement.left_expression[0]);
+            my $left = self.evaluate_expression($statement.left_expression[0]);
             if $statement.right_expression.elems {
-                my $right = $self.evaluate_expression(
+                my $right = self.evaluate_expression(
                     $statement.right_expression[0]
                 );
-                $self.do_test('EQ', $left, $right, Nil);
+                self.do_test('EQ', $left, $right, Nil);
             }
             next;
         }
-        my @blocks = $self.select_blocks($points);
+        my @blocks = self.select_blocks($points);
         for @blocks -> $block {
-            my $left = $self.evaluate_expression(
+            my $left = self.evaluate_expression(
                 $statement.left_expression[0],
                 $block,
             );
             if $statement.right_expression.elems {
-                my $right = $self.evaluate_expression(
+                my $right = self.evaluate_expression(
                     $statement.right_expression[0],
                     $block,
                 );
-                $self.do_test('EQ', $left, $right, $block.label);
+                self.do_test('EQ', $left, $right, $block.label);
             }
         }
     }
-    $self.plan_end();
+    self.plan_end();
 }
 
 method select_blocks ($points) {
-    my @blocks = [];
+    my @selected;
+    my $blocks = self.doc.data.blocks;
 
-    OUTER:
-    for $self.doc.data.blocks -> $block {
-        $block.points.exists('SKIP') and next;
-        $block.points.exists('LAST') and last;
-        for @$points -> $point {
-            next OUTER unless $block.points.exists($point);
+    for @($blocks) -> $block {
+        my %points = $block.points;
+        next if %points.exists('SKIP');
+        last if %points.exists('LAST');
+        my $next = 0;
+        for @($points) -> $point {
+            $next = 1 unless %points.exists($point);
         }
-        if $block.points.exists('ONLY') {
-            @blocks = $block;
+        next if $next;
+        if %points.exists('ONLY') {
+            @selected = ($block);
             last;
         }
-        @blocks.push($block);
+        @selected.push($block);
     }
-
-    return @blocks;
+    return @selected;
 }
 
 method evaluate_expression ($expression, $block) {
     my $context = TestML::Context.new(
-        document => $self.doc,
+        document => self.doc,
         block => $block,
-        value => undef,
+        value => *,
     );
 
     for $expression.transforms -> $transform {
         my $transform_name = $transform.name;
         next if $context.error and $transform_name ne 'Catch';
-        my $function = $self.Bridge.__get_transform_function($transform_name);
+        my $function = self.Bridge.__get_transform_function($transform_name);
         my $value;
-        try {
-            $function(
-                $context,
-                $transform.args.map: {
-                    ($_.WHAT eq 'TestML::Expression')
-                    ?? $self.evaluate_expression($_, $block)
-                    !! $_
-                };
-            );
-            CATCH {
-                $context.error($!);
-            }
-        };
-        else {
-            $context.value($value);
-        }
+#         try {
+#             $function(
+#                 $context,
+#                 $transform.args.map: {
+#                     ($_.WHAT eq 'TestML::Expression')
+#                     ?? self.evaluate_expression($_, $block)
+#                     !! $_
+#                 };
+#             );
+#             CATCH {
+#                 $context.error($!);
+#             }
+#         };
+#         else {
+#             $context.value($value);
+#         }
     }
     if $context.error {
-        fail $context.error;
+        die $context.error;
     }
     return $context;
 }
 
 method parse () {
-    my $parser = TestML::Parser.new(
-        receiver => TestML::Document::Builder.new(),
-        start_token => 'document',
-    );
-    $parser.receiver.grammar($parser.grammar);
-
-    $parser.open($self.document);
-    $parser.parse;
-
-    $self.parse_data($parser);
-    return $parser.receiver.document;
+    my $testml = slurp join '/', self.base, self.document;
+    my $document = Parser.parse($testml)
+        or die "TestML document failed to parse";
+    return $document;
+#     my $parser = TestML::Parser.new(
+#         receiver => TestML::Document::Builder.new(),
+#         start_token => 'document',
+#     );
+#     $parser.receiver.grammar($parser.grammar);
+# 
+#     $parser.open(self.document);
+#     $parser.parse;
+# 
+#     self.parse_data($parser);
+#     return $parser.receiver.document;
 }
 
 method parse_data ($parser) {
     my $builder = $parser.receiver;
     my $document = $builder.document;
     for $document.meta.data<Data> -> $file {
-        my $parser = TestML::Parser.new(
-            receiver => TestML::Document::Builder.new(),
-            grammar => $parser.grammar,
-            start_token => 'data',
-        );
+#         my $parser = TestML::Parser.new(
+#             receiver => TestML::Document::Builder.new(),
+#             grammar => $parser.grammar,
+#             start_token => 'data',
+#         );
 
         if $file eq '_' {
             $parser.stream($builder.inline_data);
         }
         else {
-            $parser.open("$self.base/$file");
+            $parser.open("self.base/$file");
         }
         $parser.parse;
         $document.data.blocks.push(|$parser.receiver.blocks);
@@ -147,8 +152,8 @@ method parse_data ($parser) {
 
 class TestML::Context;
 
-has $document;
-has $block;
-has $point;
-has $value;
-has $error;
+has $.document;
+has $.block;
+has $.point;
+has $.value;
+has $.error;

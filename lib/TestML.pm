@@ -1,6 +1,7 @@
-class TestML {
-#     $*VERSION = '0.01';
-}
+use v6;
+class TestML;
+
+# $*VERSION = '0.01';
 
 # =for pod
 # 

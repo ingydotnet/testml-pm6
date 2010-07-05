@@ -7,8 +7,8 @@ method Select () {
 }
 
 method Point ($name) {
-    $self.point($name);
-    my $value = $self.block.points{$name};
+    self.point($name);
+    my $value = self.block.points{$name};
     if $value ~~ s/\n+$/\n/ and $value eq "\n" {
         $value = '';
     }
@@ -16,16 +16,16 @@ method Point ($name) {
 }
 
 method Raw () {
-    my $point = $self.point
-        orelse fail "Raw called but there is no point";
-    return $self.block.points{$point};
+    my $point = self.point
+        or die "Raw called but there is no point";
+    return self.block.points{$point};
 }
 
 method Catch () {
-    my $error = $self.error
-        orelse fail "Catch called but no TestML error found";
+    my $error = self.error
+        or die "Catch called but no TestML error found";
     $error ~~ s/' at ' .* ' line ' \d+ '.' \n $//;
-    $self.error(Nil);
+    self.error(Nil);
     return $error;
 }
 
@@ -41,49 +41,49 @@ method String (Str $string) {
     return $string;
 }
 
-method String (TestML::XXX $xxx) {
+method String (TestML::Context $xxx) {
     return $xxx.value;
 }
 
 method String () {
-    $self.raise(
+    self.raise(
         'StandardLibraryException',
         'String transform called but no string available'
-    ) unless $self.value.defined;
-    return $self.value;
+    ) unless self.value.defined;
+    return self.value;
 }
 
 method BoolStr () {
-    return $self.value ?? 'True' !! 'False';
+    return self.value ?? 'True' !! 'False';
 }
 
 method List () {
-    return $self.value.split(/\n/);
+    return self.value.split(/\n/);
 }
 
 method Join ($separator = '') {
-    my @list = $self.value;
+    my @list = self.value;
     return @list.join($separator);
 }
 
 method Reverse () {
-    my @list = $self.value;
+    my @list = self.value;
     return @list.reverse;
 }
 
 method Sort () {
-    my @list = $self.value;
+    my @list = self.value;
     return @list.sort;
 }
 
 method Item () {
-    my @list = $self.value;
+    my @list = self.value;
     return (@list, '').join("\n");
 }
 
 # TODO: review this one
 method Union () {
-    my @list = $self.value;
+    my @list = self.value;
     # my @list2 = shift;
     my @list2 = @list;
     return |@list, |@list2;
@@ -91,12 +91,12 @@ method Union () {
 
 # TODO
 method Unique () {
-#     my @list = $self.value;
+#     my @list = self.value;
 #     return [ ... ];
 }
 
 method Chomp () {
-    my $string = $self.value;
+    my $string = self.value;
     return $string.chomp;
 }
 

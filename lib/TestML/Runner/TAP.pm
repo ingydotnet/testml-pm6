@@ -1,46 +1,46 @@
 use v6;
+use TestML::Runner;
 class TestML::Runner::TAP is TestML::Runner;
 
 use Test;
 
-method init_bridge ($self) {
-    @*INC.unshift: 't', 'lib';
-
-    my $class = $self.bridge;
+method init_bridge () {
+    my $class = self.bridge;
     if $class ne 'main' {
         try {
-            #XXX: check on P6 require
-            require $class;
+            eval "use $class";
             CATCH {
-                fail "Error loading bridge class '$class': $!";
+                die("Error loading bridge class '$class': $!");
             }
         }
     }
 
-    return $class.new();
+    use Bridge1;
+    return Bridge1.new();
+    return eval "$class.new()";
+
 }
 
-method title ($self) {
-    if $self.doc.meta.data<Title> -> $title {
+method title () {
+    if self.doc.meta.data<Title> -> $title {
         say "=== $title ===";
     }
 }
 
-method plan_begin ($self, $tests) {
-    if $self.doc.meta.data<Plan> -> $tests {
-        Test::plan($tests);
+method plan_begin () {
+    if self.doc.meta.data<Plan> -> $tests {
+        plan($tests);
     }
     else {
-        Test::plan(*);
+        plan(*);
     }
 }
 
 method plan_end () {
 }
 
-# TODO - Refactor so that standard lib finds this comparison through EQ
 method do_test ($operator, $left, $right, $label) {
     if ($operator eq 'EQ') {
-        Test::is($left.value, $right.value, $label);
+        is($left.value, $right.value, $label);
     }
 }
