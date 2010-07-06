@@ -5,20 +5,14 @@ class TestML::Runner::TAP is TestML::Runner;
 use Test;
 
 method init_bridge () {
-    my $class = self.bridge;
-    if $class ne 'main' {
-        try {
-            eval "use $class";
-            CATCH {
-                die("Error loading bridge class '$class': $!");
-            }
-        }
+    my $class_name = self.bridge;
+    if $class_name ne 'main' {
+        eval "use $class_name";
+        my $class = eval($class_name);
+        die "Can't use $class_name " ~ ~@*INC
+            unless ~$class;
     }
-
-    use Bridge1;
-    return Bridge1.new();
-    return eval "$class.new()";
-
+    return eval "$class_name.new";
 }
 
 method title () {

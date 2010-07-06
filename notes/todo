@@ -1,2 +1,14 @@
-- Parse quoted strings properly
-- Create the rest of the document tree
+- Make == (EQ) an assertion function:
+  $left.EQ($right);
+- Add .HAS .OK .NOK etc.
+
+== Add These Tests
+
+- Separate data section
+- .OK
+- .NOK
+- .Throw .Catch
+- .HAS
+- .SKIP
+- .LAST
+- .ONLY

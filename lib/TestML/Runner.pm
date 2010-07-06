@@ -116,17 +116,6 @@ method parse () {
     my $document = Parser.parse($testml)
         or die "TestML document failed to parse";
     return $document;
-#     my $parser = TestML::Parser.new(
-#         receiver => TestML::Document::Builder.new(),
-#         start_token => 'document',
-#     );
-#     $parser.receiver.grammar($parser.grammar);
-# 
-#     $parser.open(self.document);
-#     $parser.parse;
-# 
-#     self.parse_data($parser);
-#     return $parser.receiver.document;
 }
 
 method parse_data ($parser) {

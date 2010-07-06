@@ -1,5 +1,5 @@
 use v6;
-module TestML::Parser;
+class Parser;
 
 use TestML::Document;
 
@@ -12,7 +12,6 @@ grammar TestMLGrammar { ... }
 grammar TestMLDataSection { ... }
 grammar TestMLActions { ... }
 
-class Parser;
 method parse($testml) {
     $doc = TestML::Document.new();
     @stack = ();
@@ -27,6 +26,7 @@ method parse($testml) {
     return $doc;
 }
 
+#------------------------------------------------------------------------------#
 grammar TestMLBase;
 regex ALWAYS    { <?>               } # Always match
 regex ANY       { .                 } # Any unicode character
@@ -90,6 +90,7 @@ token dq_escape {
 }
 
 
+#------------------------------------------------------------------------------#
 grammar TestMLGrammar is TestMLBase;
 rule TOP {^ <document> $}
 
@@ -97,6 +98,7 @@ rule document {
     <meta_section> <test_section> <data_section>?
 }
 
+#------------------------------------------------------------------------------#
 rule meta_section {
     [ <comment> | <blank_line> ]*
     <meta_testml_statement>
@@ -136,24 +138,25 @@ token quoted_string {
 }
 
 
-regex test_section {
+#------------------------------------------------------------------------------#
+token test_section {
     [ <wspace> | <test_statement> ]*
 }
 
-regex wspace {
+token wspace {
     <SPACE> | <EOL> | <comment>
 }
 
-regex test_statement {
+token test_statement {
     <test_statement_start>
     <test_expression> <assertion_expression>? ';'
 }
 
-regex test_statement_start {
+token test_statement_start {
     <ALWAYS>
 }
 
-regex test_expression {
+token test_expression {
     <sub_expression>
     [
         <!assertion_call>
@@ -162,130 +165,132 @@ regex test_expression {
     ]*
 }
 
-regex sub_expression {
+token sub_expression {
     <transform_call> | <data_point> | <quoted_string> | <constant>
 }
 
-regex transform_call {
+token transform_call {
     <transform_name> '(' <wspace>* <argument_list> <wspace>* ')'
 }
 
-regex transform_name {
+token transform_name {
     <user_transform> | <core_transform>
 }
 
-regex user_transform {
+token user_transform {
     <LOWER> <WORD>*
 }
 
-regex core_transform {
+token core_transform {
     <UPPER> <WORD>*
 }
 
-regex call_indicator {
+token call_indicator {
     <DOT> <wspace>* | <wspace>* <DOT>
 }
 
-regex data_point {
+token data_point {
     <.STAR> ( <.LOWER> <.WORD>* )
 }
 
-regex constant {
+token constant {
     <UPPER> <WORD>*
 }
 
-regex argument_list {
+token argument_list {
     [ <argument> [ <wspace>* ',' <wspace>* <argument> ]* ]?
 }
 
-regex argument {
+token argument {
     <sub_expression>
 }
 
-regex assertion_expression {
+token assertion_expression {
     <assertion_operation> | <assertion_call>
 }
 
-regex assertion_operation {
+token assertion_operation {
     <wspace>+ <assertion_operator> <wspace>+ <test_expression>
 }
 
-regex assertion_operator {
+token assertion_operator {
     '=='
 }
 
-regex assertion_call {
+token assertion_call {
     <call_indicator> <assertion_name>
     '(' <wspace>* <test_expression> <wspace>* ')'
 }
 
-regex assertion_name {
+token assertion_name {
     <UPPER>+
 }
 
-regex data_section {
+token data_section {
     <ANY>*
 }
 
 
+#------------------------------------------------------------------------------#
 grammar TestMLDataSection is TestMLBase;
-regex TOP { ^ <data_section> $ }
+token TOP { ^ <data_section> $ }
 
-regex data_section {
+token data_section {
     <data_block>*
 }
 
-regex data_block {
+token data_block {
     <block_header> [ <blank_line> | <comment> ]* <block_point>*
 }
 
-regex block_header {
+token block_header {
     <block_marker> [ <SPACE>+ <block_label> ]? <SPACE>* <EOL>
 }
 
-regex block_marker {
+token block_marker {
     '==='
 }
 
-regex block_label {
+token block_label {
 #          [ <ANY> - [ <SPACE> | <BREAK> ] ]
 #          [ <NON_BREAK>* [ <ANY> - [ <SPACE> | <BREAK> ] ] ]?
     <unquoted_string>
 }
 
-regex block_point {
+token block_point {
     <lines_point> | <phrase_point>
 }
 
-regex lines_point {
+token lines_point {
     <point_marker> <SPACE>+ <point_name> <SPACE>* <EOL>
     <!before block_header>
     <line>
 }
 
-regex phrase_point {
+token phrase_point {
     <point_marker> <SPACE>+ <point_name> ':' <SPACE>+
     (<unquoted_string>) <SPACE>* <EOL>
     [<blank_line> | <comment>]*
 }
 
-regex point_marker {
+token point_marker {
     '---'
 }
 
-regex point_name {
+token point_name {
     <core_point_name> | <user_point_name>
 }
 
-regex core_point_name {
+token core_point_name {
     <UPPER> <WORD>*
 }
 
-regex user_point_name {
+token user_point_name {
     <LOWER> <WORD>*
 }
 
 
+#------------------------------------------------------------------------------#
 class TestMLActions;
 
 ### Base Section ###
