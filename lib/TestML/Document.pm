@@ -3,6 +3,10 @@ use v6;
 class TestML::Document::Meta { ... }
 class TestML::Document::Tests { ... }
 class TestML::Document::Data { ... }
+class TestML::Expression { ... }
+class TestML::Assertion { ... }
+
+#-----------------------------------------------------------------------------
 class TestML::Document;
 
 has $.meta = TestML::Document::Meta.new;
@@ -27,8 +31,6 @@ class TestML::Document::Tests;
 has $.statements = [];
 
 #-----------------------------------------------------------------------------
-class TestML::Expression { ... }
-class TestML::Assertion { ... }
 class TestML::Statement;
 
 has $.expression = TestML::Expression.new;

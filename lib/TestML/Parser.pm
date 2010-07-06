@@ -6,7 +6,7 @@ use TestML::Document;
 my $doc;
 my $data;
 my $statement;
-my @stack;
+my @insertion_stack;
 
 grammar TestMLGrammar { ... }
 grammar TestMLDataSection { ... }
@@ -14,7 +14,7 @@ grammar TestMLActions { ... }
 
 method parse($testml) {
     $doc = TestML::Document.new();
-    @stack = ();
+    @insertion_stack = ();
     my $rc1 = TestMLGrammar.parse($testml, :actions(TestMLActions));
     if (not $rc1) {
         die "Parse TestML failed";
@@ -341,7 +341,7 @@ method meta_value($/) {
 ### Test Section ###
 method test_statement_start($/) {
     $statement = TestML::Statement.new;
-    @stack.push($statement.expression);
+    @insertion_stack.push($statement.expression);
 }
 
 method test_statement($/) {
@@ -351,20 +351,20 @@ method test_statement($/) {
 method data_point($/) {
     my $point_name = ~$0;
     my $transform = TestML::Transform.new(name => 'Point', args => [$point_name]);
-    @stack[*-1].transforms.push($transform);
+    @insertion_stack[*-1].transforms.push($transform);
     $statement.points.push($point_name);
 }
 
 method transform_call($/) {
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(name => $transform_name);
-    @stack[*-1].transforms.push($transform);
+    @insertion_stack[*-1].transforms.push($transform);
 }
 
 method assertion_operator($/) {
-    @stack.pop();
+    @insertion_stack.pop();
     $statement.assertion = TestML::Assertion.new(name => 'EQ');
-    @stack.push($statement.assertion.expression);
+    @insertion_stack.push($statement.assertion.expression);
 }
 
 ### Data Section ###
