@@ -341,9 +341,7 @@ method meta_value($/) {
 ### Test Section ###
 method test_statement_start($/) {
     $statement = TestML::Statement.new;
-    my $expression = TestML::Expression.new;
-    $statement.left_expression.push($expression);
-    @stack.push($expression);
+    @stack.push($statement.expression);
 }
 
 method test_statement($/) {
@@ -365,9 +363,8 @@ method transform_call($/) {
 
 method assertion_operator($/) {
     @stack.pop();
-    my $expression = TestML::Expression.new;
-    $statement.right_expression.push($expression);
-    @stack.push($expression);
+    $statement.assertion = TestML::Assertion.new(name => 'EQ');
+    @stack.push($statement.assertion.expression);
 }
 
 ### Data Section ###

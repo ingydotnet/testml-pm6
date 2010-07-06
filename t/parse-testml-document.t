@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 21;
+plan 22;
 
 BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser;
@@ -9,7 +9,7 @@ my $testml = '
 %TestML: 1.0
 %Plan: 2
 %Title: O HAI TEST
- %PointMarker: +++         #A line comment
+%PointMarker: +++         #A line comment
 
 *input.uppercase() == *output;
 
@@ -35,19 +35,18 @@ try {
     is $statement.points.join('-'), 'input-output',
         'Point list is correct';
 
-    is $statement.left_expression[*-1].transforms.elems, 2, 'Left side has two parts';
-    is $statement.left_expression[*-1].transforms[0].name, 'Point',
-        'First sub is a Point';
-    is $statement.left_expression[*-1].transforms[0].args[0], 'input',
-        'Point name is "input"';
-    is $statement.left_expression[*-1].transforms[1].name, 'uppercase',
-        'Second sub is "uppercase"';
+    is $statement.expression.transforms.elems, 2, 'Expression has two transforms';
+    my $expression = $statement.expression;
+    is $expression.transforms[0].name, 'Point', 'First sub is a Point';
+    is $expression.transforms[0].args[0], 'input', 'Point name is "input"';
+    is $expression.transforms[1].name, 'uppercase', 'Second sub is "uppercase"';
 
-    is $statement.right_expression[*-1].transforms.elems, 1, 'Right side has one part';
-    is $statement.right_expression[*-1].transforms[0].name, 'Point',
-        'First sub is a Point';
-    is $statement.right_expression[*-1].transforms[0].args[0], 'output',
-        'Point name is "output"';
+    is $statement.assertion.name, 'EQ', 'Assertion is "EQ"';
+
+    $expression = $statement.assertion.expression;
+    is $expression.transforms.elems, 1, 'Right side has one part';
+    is $expression.transforms[0].name, 'Point', 'First sub is a Point';
+    is $expression.transforms[0].args[0], 'output', 'Point name is "output"';
 
     is $match.data.blocks.elems, 2, 'Two data blocks';
     my ($block1, $block2) = $match.data.blocks;

@@ -27,17 +27,24 @@ class TestML::Document::Tests;
 has $.statements = [];
 
 #-----------------------------------------------------------------------------
+class TestML::Expression { ... }
+class TestML::Assertion { ... }
 class TestML::Statement;
 
+has $.expression = TestML::Expression.new;
+has $.assertion is rw;
 has $.points = [];
-has $.left_expression = [];
-has $.assertion_operator;
-has $.right_expression = [];
 
 #-----------------------------------------------------------------------------
 class TestML::Expression;
 
 has $.transforms = [];
+
+#-----------------------------------------------------------------------------
+class TestML::Assertion;
+
+has $.name;
+has $.expression = TestML::Expression.new;
 
 #-----------------------------------------------------------------------------
 class TestML::Transform;
