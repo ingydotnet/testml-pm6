@@ -4,20 +4,9 @@ class TestML::Runner::TAP is TestML::Runner;
 
 use Test;
 
-method init_bridge () {
-    my $class_name = self.bridge;
-    if $class_name ne 'main' {
-        eval "use $class_name";
-        my $class = eval($class_name);
-        die "Can't use $class_name " ~ ~@*INC
-            unless ~$class;
-    }
-    return eval "$class_name.new";
-}
-
 method title () {
     if self.doc.meta.data<Title> -> $title {
-        say "=== $title ===";
+        note("=== $title ===");
     }
 }
 
@@ -30,11 +19,6 @@ method plan_begin () {
     }
 }
 
-method plan_end () {
-}
-
-method do_test ($operator, $left, $right, $label) {
-    if ($operator eq 'EQ') {
-        is($left.value, $right.value, $label);
-    }
+method do_test ($op, $left, $right, $label) {
+    is($left.value, $right.value, $label);
 }

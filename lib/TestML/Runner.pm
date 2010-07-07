@@ -15,9 +15,19 @@ method setup {
     die "\nDon't use TestML::Runner directly.\nUse an appropriate subclass like TestML::Runner::TAP.\n";
 }
 
-method init_bridge {
-    die "'init_bridge' must be implemented in subclass";
+method init_bridge () {
+    my $class_name = self.bridge;
+    if $class_name ne 'main' {
+        eval "use $class_name";
+        my $class = eval($class_name);
+        die "Can't use $class_name " ~ ~@*INC
+            unless ~$class;
+    }
+    return eval "$class_name.new";
 }
+
+method plan_begin () { ... }
+method plan_end () { ... }
 
 method run () {
     # TODO self.base(($*PROGRAM_NAME ~~ /(.*)'/'/) ?? $<0> !! '.');
