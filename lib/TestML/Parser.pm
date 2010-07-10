@@ -263,8 +263,11 @@ token block_point {
 
 token lines_point {
     <point_marker> <SPACE>+ <point_name> <SPACE>* <EOL>
-    <!before block_header>
-    <line>
+    ([
+        <!before <block_marker>>
+        <!before <point_marker>>
+        <line>
+    ]*)
 }
 
 token phrase_point {
@@ -358,6 +361,11 @@ method data_point($/) {
 method transform_call($/) {
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(name => $transform_name);
+    for $<argument_list><argument> -> $argument {
+        if $argument<sub_expression><quoted_string> {
+            $transform.args.push($argument<sub_expression><quoted_string>.ast);
+        }
+    }
     @insertion_stack[*-1].transforms.push($transform);
 }
 
@@ -376,10 +384,16 @@ method data_block($/) {
     my $block = TestML::Block.new;
     $block.label = ~$<block_header><block_label>;
     for $<block_point> -> $point {
-        my $name = ~$point<phrase_point><point_name>;
-        my $value = ~$point<phrase_point>[0];
+        my ($name, $value);
+        if $point<phrase_point> {
+            $name = ~$point<phrase_point><point_name>;
+            $value = ~$point<phrase_point>[0];
+        }
+        else {
+            $name = ~$point<lines_point><point_name>;
+            $value = ~$point<lines_point>[0];
+        }
         $block.points{$name} = $value;
     }
-
     $doc.data.blocks.push($block);
 }

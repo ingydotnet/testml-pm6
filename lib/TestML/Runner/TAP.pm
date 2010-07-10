@@ -19,6 +19,6 @@ method plan_begin () {
     }
 }
 
-method do_test ($op, $left, $right, $label) {
+method EQ ($left, $right, $label) {
     is($left.value, $right.value, $label);
 }

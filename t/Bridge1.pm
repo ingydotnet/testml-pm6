@@ -1,8 +1,12 @@
 use v6;
-use TestML::Bridge;
 
-class Bridge1 is TestML::Bridge;
+module Bridge1;
 
-method uppercase() {
-    return self.value.uc;
+our sub uppercase($this) {
+    return $this.value.uc;
+}
+
+our sub my_thing($this) {
+    my $str = $this.value.=subst(/\n$/, "");
+    return $str.split("\n").join(' - ');
 }

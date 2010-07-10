@@ -7,46 +7,22 @@ use TestML::Parser;
 
 has $.bridge;
 has $.document;
-has $.base = 't';
+has $.base = $*PROGRAM_NAME.flip.subst(/.*?'/'/, '').flip;   #'RAKUDO
 has $.doc = self.parse();
-has $.Bridge = self.init_bridge;
+has $.transform_modules = self.init_transform_modules;
 
-method setup {
-    die "\nDon't use TestML::Runner directly.\nUse an appropriate subclass like TestML::Runner::TAP.\n";
-}
-
-method init_bridge () {
-    my $class_name = self.bridge;
-    if $class_name ne 'main' {
-        eval "use $class_name";
-        my $class = eval($class_name);
-        die "Can't use $class_name " ~ ~@*INC
-            unless ~$class;
-    }
-    return eval "$class_name.new";
-}
-
+method title () { ... }
 method plan_begin () { ... }
 method plan_end () { ... }
 
 method run () {
-    # TODO self.base(($*PROGRAM_NAME ~~ /(.*)'/'/) ?? $<0> !! '.');
     self.title();
     self.plan_begin();
 
     for self.doc.test.statements -> $statement {
-        my $points = $statement.points;
-        if not $points.elems {
-            my $left = self.evaluate_expression($statement.expression);
-            if $statement.assertion {
-                my $right = self.evaluate_expression(
-                    $statement.assertion.expression
-                );
-                self.do_test('EQ', $left, $right, Nil);
-            }
-            next;
-        }
-        my @blocks = self.select_blocks($points);
+        my @blocks = $statement.points.elems
+            ?? self.select_blocks($statement.points)
+            !! TestML::Block.new; !1;
         for @blocks -> $block {
             my $left = self.evaluate_expression(
                 $statement.expression,
@@ -57,7 +33,7 @@ method run () {
                     $statement.assertion.expression,
                     $block,
                 );
-                self.do_test('EQ', $left, $right, $block.label);
+                self.EQ($left, $right, $block.label);
             }
         }
     }
@@ -90,34 +66,37 @@ method evaluate_expression ($expression, $block) {
     my $context = TestML::Context.new(
         document => self.doc,
         block => $block,
-        value => *,
     );
 
     for $expression.transforms -> $transform {
         my $transform_name = $transform.name;
-        next if $context.error and $transform_name ne 'Catch';
-        my $function = self.Bridge.__get_transform_function($transform_name);
-        my $value;
-#         try {
+#         say "transform_name > $transform_name";
+#         next if $context.error and $transform_name ne 'Catch';
+        my $function = self.get_transform_function($transform_name);
+        {
 #             $function(
 #                 $context,
 #                 $transform.args.map: {
 #                     ($_.WHAT eq 'TestML::Expression')
 #                     ?? self.evaluate_expression($_, $block)
 #                     !! $_
-#                 };
-#             );
+#                 }
+#             );/
+
+            $context.value = $function($context, |@($transform.args));
+#             say "context.value > " ~ $context.value;
+
 #             CATCH {
 #                 $context.error($!);
+#                 $context.value = Nil;
 #             }
-#         };
-#         else {
-#             $context.value($value);
-#         }
+        }
     }
+
     if $context.error {
         die $context.error;
     }
+
     return $context;
 }
 
@@ -132,12 +111,6 @@ method parse_data ($parser) {
     my $builder = $parser.receiver;
     my $document = $builder.document;
     for $document.meta.data<Data> -> $file {
-#         my $parser = TestML::Parser.new(
-#             receiver => TestML::Document::Builder.new(),
-#             grammar => $parser.grammar,
-#             start_token => 'data',
-#         );
-
         if $file eq '_' {
             $parser.stream($builder.inline_data);
         }
@@ -149,10 +122,34 @@ method parse_data ($parser) {
     }
 }
 
+method init_transform_modules() {
+    my @modules = (
+        self.bridge,
+        'TestML::Standard',
+    );
+    for @modules -> $module_name {
+        eval "use $module_name";
+        my $module = eval($module_name);
+        die "Can't use $module_name " ~ ~@*INC
+            unless ~$module;
+    }
+    return @modules;
+}
+
+method get_transform_function ($name) {
+    my @modules = self.transform_modules;
+    for @modules -> $module_name {
+        my $function = eval "&$module_name" ~ "::$name";
+        return $function if $function;
+    }
+    die "Can't locate function '$name'";
+}
+
+
 class TestML::Context;
 
-has $.document;
-has $.block;
-has $.point;
-has $.value;
-has $.error;
+has $.document is rw;
+has $.block is rw;
+has $.point is rw;
+has $.value is rw;
+has $.error is rw;
