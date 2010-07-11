@@ -5,13 +5,13 @@ class TestML::Runner::TAP is TestML::Runner;
 use Test;
 
 method title () {
-    if self.doc.meta.data<Title> -> $title {
+    if $.doc.meta.data<Title> -> $title {
         note("=== $title ===");
     }
 }
 
 method plan_begin () {
-    if self.doc.meta.data<Plan> -> $tests {
+    if $.doc.meta.data<Plan> -> $tests {
         plan($tests);
     }
     else {

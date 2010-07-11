@@ -8,43 +8,42 @@ use TestML::Parser;
 has $.bridge;
 has $.document;
 has $.base = $*PROGRAM_NAME.flip.subst(/.*?'/'/, '').flip;   #'RAKUDO
-has $.doc = self.parse();
-has $.transform_modules = self.init_transform_modules;
+has $.doc = $.parse_document();
+has $.transform_modules = $._transform_modules;
 
 method title () { ... }
 method plan_begin () { ... }
 method plan_end () { ... }
 
 method run () {
-    self.title();
-    self.plan_begin();
+    $.title();
+    $.plan_begin();
 
-    for self.doc.test.statements -> $statement {
+    for $.doc.test.statements -> $statement {
         my @blocks = $statement.points.elems
-            ?? self.select_blocks($statement.points)
+            ?? $.select_blocks($statement.points)
             !! TestML::Block.new; !1;
         for @blocks -> $block {
-            my $left = self.evaluate_expression(
+            my $left = $.evaluate_expression(
                 $statement.expression,
                 $block,
             );
             if $statement.assertion.expression {
-                my $right = self.evaluate_expression(
+                my $right = $.evaluate_expression(
                     $statement.assertion.expression,
                     $block,
                 );
-                self.EQ($left, $right, $block.label);
+                $.EQ($left, $right, $block.label);
             }
         }
     }
-    self.plan_end();
+    $.plan_end();
 }
 
 method select_blocks ($points) {
     my @selected;
-    my $blocks = self.doc.data.blocks;
 
-    for @($blocks) -> $block {
+    for @($.doc.data.blocks) -> $block {
         my %points = $block.points;
         next if %points.exists('SKIP');
         last if %points.exists('LAST');
@@ -64,7 +63,7 @@ method select_blocks ($points) {
 
 method evaluate_expression ($expression, $block) {
     my $context = TestML::Context.new(
-        document => self.doc,
+        document => $.doc,
         block => $block,
     );
 
@@ -72,13 +71,13 @@ method evaluate_expression ($expression, $block) {
         my $transform_name = $transform.name;
 #         say "transform_name > $transform_name";
 #         next if $context.error and $transform_name ne 'Catch';
-        my $function = self.get_transform_function($transform_name);
+        my $function = $.get_transform_function($transform_name);
         {
 #             $function(
 #                 $context,
 #                 $transform.args.map: {
 #                     ($_.WHAT eq 'TestML::Expression')
-#                     ?? self.evaluate_expression($_, $block)
+#                     ?? $.evaluate_expression($_, $block)
 #                     !! $_
 #                 }
 #             );/
@@ -101,7 +100,7 @@ method evaluate_expression ($expression, $block) {
 }
 
 method get_transform_function ($name) {
-    my @modules = self.transform_modules;
+    my @modules = $.transform_modules;
     for @modules -> $module_name {
         my $function = eval "&$module_name" ~ "::$name";
         return $function if $function;
@@ -109,16 +108,16 @@ method get_transform_function ($name) {
     die "Can't locate function '$name'";
 }
 
-method parse () {
-    my $testml = slurp join '/', self.base, self.document;
+method parse_document () {
+    my $testml = slurp join '/', $.base, $.document;
     my $document = TestML::Parser.parse($testml)
         or die "TestML document failed to parse";
     return $document;
 }
 
-method init_transform_modules() {
+method _transform_modules() {
     my @modules = (
-        self.bridge,
+        $.bridge,
         'TestML::Standard',
     );
     for @modules -> $module_name {

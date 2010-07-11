@@ -1,4 +1,5 @@
 use v6;
-class TestML;
+
+module TestML;
 
 our $*VERSION = '0.01';
