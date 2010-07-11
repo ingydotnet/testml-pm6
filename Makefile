@@ -1,10 +1,14 @@
 ALL_TESTS = $(shell ls t/*.t)
 
-all:
+default:
+	@echo 'Try these `make` targets:'
+	@echo
+	@echo '    make test             # Run all tests'
+	@echo '    make t/test.t         # Run a specific test'
 
 test: $(ALL_TESTS)
 
 $(ALL_TESTS): force
-	perl6 $@
+	PERL6LIB=t:lib perl6 $@
 
 force:

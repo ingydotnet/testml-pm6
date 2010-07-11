@@ -2,7 +2,6 @@ use v6;
 use Test;
 plan 22;
 
-BEGIN { @*INC.unshift: 'lib' }
 use TestML::Parser;
 
 my $testml = '
@@ -23,7 +22,7 @@ my $testml = '
 ';
 
 try {
-    my $match = Parser.parse($testml);
+    my $match = TestML::Parser.parse($testml);
     ok $match, 'TestML string matches against TestML grammar';
     is $match.meta.data<TestML>, '1.0', 'Version parses';
     is $match.meta.data<Plan>, '2', 'Plan parses';

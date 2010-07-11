@@ -1,6 +1,5 @@
 use v6;
-
-module TestML::Standard {
+module TestML::Standard;
 
 # sub Select () {
 #     return (shift).value;
@@ -101,5 +100,3 @@ our sub Item ($this) {
 #     return $string.chomp;
 # }
 # 
-
-}

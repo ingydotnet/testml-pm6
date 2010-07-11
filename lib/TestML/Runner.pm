@@ -1,8 +1,8 @@
-class TestML::Runner;
-class TestML::Context { ... }
 use v6;
+class TestML::Runner;
 
-use TestML::Document;
+class TestML::Context { ... }
+
 use TestML::Parser;
 
 has $.bridge;
@@ -100,26 +100,20 @@ method evaluate_expression ($expression, $block) {
     return $context;
 }
 
-method parse () {
-    my $testml = slurp join '/', self.base, self.document;
-    my $document = Parser.parse($testml)
-        or die "TestML document failed to parse";
-    return $document;
+method get_transform_function ($name) {
+    my @modules = self.transform_modules;
+    for @modules -> $module_name {
+        my $function = eval "&$module_name" ~ "::$name";
+        return $function if $function;
+    }
+    die "Can't locate function '$name'";
 }
 
-method parse_data ($parser) {
-    my $builder = $parser.receiver;
-    my $document = $builder.document;
-    for $document.meta.data<Data> -> $file {
-        if $file eq '_' {
-            $parser.stream($builder.inline_data);
-        }
-        else {
-            $parser.open("self.base/$file");
-        }
-        $parser.parse;
-        $document.data.blocks.push(|$parser.receiver.blocks);
-    }
+method parse () {
+    my $testml = slurp join '/', self.base, self.document;
+    my $document = TestML::Parser.parse($testml)
+        or die "TestML document failed to parse";
+    return $document;
 }
 
 method init_transform_modules() {
@@ -134,15 +128,6 @@ method init_transform_modules() {
             unless ~$module;
     }
     return @modules;
-}
-
-method get_transform_function ($name) {
-    my @modules = self.transform_modules;
-    for @modules -> $module_name {
-        my $function = eval "&$module_name" ~ "::$name";
-        return $function if $function;
-    }
-    die "Can't locate function '$name'";
 }
 
 

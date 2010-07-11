@@ -2,9 +2,9 @@ use v6;
 
 class TestML::Document::Meta { ... }
 class TestML::Document::Tests { ... }
-class TestML::Document::Data { ... }
 class TestML::Expression { ... }
 class TestML::Assertion { ... }
+class TestML::Document::Data { ... }
 
 #-----------------------------------------------------------------------------
 class TestML::Document;
