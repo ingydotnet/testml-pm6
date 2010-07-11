@@ -207,6 +207,9 @@ token data_section {
 #------------------------------------------------------------------------------#
 grammar TestML::Parser::Grammar::DataSection is TestML::Parser::Grammar::Base;
 
+our $block_marker = '===';
+our $point_marker = '---';
+
 token TOP { ^ <data_section> $ }
 
 token data_section {
@@ -222,7 +225,7 @@ token block_header {
 }
 
 token block_marker {
-    '==='
+    $block_marker
 }
 
 token block_label {
@@ -251,7 +254,7 @@ token phrase_point {
 }
 
 token point_marker {
-    '---'
+    $point_marker
 }
 
 token point_name {

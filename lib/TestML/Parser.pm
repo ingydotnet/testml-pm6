@@ -18,6 +18,8 @@ method parse($testml) {
     if (not $rc1) {
         die "Parse TestML failed";
     }
+    $TestML::Parser::Grammar::DataSection::block_marker = $doc.meta.data<BlockMarker>;
+    $TestML::Parser::Grammar::DataSection::point_marker = $doc.meta.data<PointMarker>;
     my $rc2 = TestML::Parser::Grammar::DataSection.parse(
         $data, :actions(TestML::Parser::Actions)
     );

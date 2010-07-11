@@ -117,9 +117,11 @@ method parse_document () {
 
 method _transform_modules() {
     my @modules = (
-        $.bridge,
         'TestML::Standard',
     );
+    if $.bridge {
+        @modules.push($.bridge);
+    }
     for @modules -> $module_name {
         eval "use $module_name";
         my $module = eval($module_name);

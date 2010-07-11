@@ -1,14 +1,14 @@
 use v6;
 use Test;
-plan 22;
+plan 23;
 
 use TestML::Parser;
 
 my $testml = '
-%TestML: 1.0
+# A comment
+%TestML: 1.0                #A line comment
 %Plan: 2
 %Title: O HAI TEST
-%PointMarker: +++         #A line comment
 
 *input.uppercase() == *output;
 
@@ -27,7 +27,8 @@ try {
     is $match.meta.data<TestML>, '1.0', 'Version parses';
     is $match.meta.data<Plan>, '2', 'Plan parses';
     is $match.meta.data<Title>, 'O HAI TEST', 'Title parses';
-    is $match.meta.data<PointMarker>, '+++', 'PointMarker parses';
+    is $match.meta.data<BlockMarker>, '===', 'BlockMarker defaults';
+    is $match.meta.data<PointMarker>, '---', 'PointMarker defaults';
 
     is $match.test.statements.elems, 1, 'One test statement';
     my $statement = $match.test.statements[0];
