@@ -139,3 +139,5 @@ has $.block is rw;
 has $.point is rw;
 has $.value is rw;
 has $.error is rw;
+
+# vim ft=perl6
