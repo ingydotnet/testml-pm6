@@ -46,7 +46,6 @@ method select_blocks ($points) {
     for @($.doc.data.blocks) -> $block {
         my %points = $block.points;
         next if %points.exists('SKIP');
-        last if %points.exists('LAST');
         my $next = 0;
         for @($points) -> $point {
             $next = 1 unless %points.exists($point);
@@ -57,6 +56,7 @@ method select_blocks ($points) {
             last;
         }
         @selected.push($block);
+        last if %points.exists('LAST');
     }
     return @selected;
 }
