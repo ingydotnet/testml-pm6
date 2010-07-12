@@ -11,6 +11,10 @@ Use `ufo`. http://github.com/masak/ufo
     > make test
     > make install
 
+== NOTE
+
+If you got this from `git`, and you want to run `make test` on TestML itself, you'll need to grab a copy of the TestML Common Test Suite from http://github.com/ingydotnet/testml-tml.
+
 == COPYRIGHT
 
 Copyright 2010. Ingy döt Net.
