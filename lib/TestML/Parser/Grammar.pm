@@ -21,9 +21,10 @@ regex SINGLE    { "'"               } # A single quote character
 regex DOUBLE    { '"'               } # A double quote character
 regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs 
 
-token comment { <HASH> <line> }
 token line { <NON_BREAK>* <EOL> }
 token blank_line { <SPACE>* <EOL> }
+token comment { <HASH> <line> }
+
 token unquoted_string {
     [
         <!before <SPACE>+ <HASH>>
@@ -31,8 +32,13 @@ token unquoted_string {
         <ANY>
     ]+
 }
+
 token single_quoted_string {
-    \' ~ \' [ <sq_string> | \\ <sq_escape> ]*
+    \' ~ \'
+    [
+        <sq_string> |
+        \\ <sq_escape>
+    ]*
 }
 token sq_string {
     [
@@ -42,11 +48,14 @@ token sq_string {
         <ANY>
     ]+
 }
-token sq_escape {
-    <['\\]>
-}
+token sq_escape { <['\\]> }
+
 token double_quoted_string {
-    \" ~ \" [ <dq_string> | \\ <dq_escape> ]*
+    \" ~ \"
+    [
+        <dq_string> |
+        \\ <dq_escape>
+    ]*
 }
 token dq_string {
     [
@@ -57,9 +66,7 @@ token dq_string {
         <ANY>
     ]+
 }
-token dq_escape {
-    <["\\nrt]>
-}
+token dq_escape { <["\\nrt]> }
 
 
 #------------------------------------------------------------------------------#
@@ -68,7 +75,9 @@ grammar TestML::Parser::Grammar is TestML::Parser::Grammar::Base;
 rule TOP {^ <document> $}
 
 rule document {
-    <meta_section> <test_section> <data_section>?
+    <meta_section>
+    <test_section>
+    <data_section>?
 }
 
 #------------------------------------------------------------------------------#
@@ -122,7 +131,9 @@ token wspace {
 
 token test_statement {
     <test_statement_start>
-    <test_expression> <assertion_expression>? ';'
+    <test_expression>
+    <assertion_expression>?
+    ';'
 }
 
 token test_statement_start {
@@ -139,7 +150,10 @@ token test_expression {
 }
 
 token sub_expression {
-    <transform_call> | <data_point> | <expression_string> | <constant>
+    <transform_call> |
+    <data_point> |
+    <expression_string> |
+    <constant>
 }
 
 token expression_string {
@@ -234,8 +248,6 @@ token block_marker {
 }
 
 token block_label {
-#          [ <ANY> - [ <SPACE> | <BREAK> ] ]
-#          [ <NON_BREAK>* [ <ANY> - [ <SPACE> | <BREAK> ] ] ]?
     <unquoted_string>
 }
 
