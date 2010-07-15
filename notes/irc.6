@@ -1,0 +1,65 @@
+10:01 <@ingy> what doe .HOW do?
+10:01 <@ingy> *does
+10:02 <@TimToady> tylercurtis: yes, that's what I was trying to say re circularity saws
+10:02 < tylercurtis> On the other hand, sometimes you actually do want to defer your exception-handling logic to a separate sub.
+10:02 <@moritz_> ingy: it returns the metaclas
+10:02 < cognominal> TimToady, what is the status of Whatever for dispatching in the light of Range as a role?
+10:02 <@moritz_> HOW = Higher Order Workings
+
+10:06 < isBEKaml> rakudo: class Foo { has $.xfoo; }; say Foo.^fields; ## Just sayin' :P
+10:06 <@moritz_> rakudo: class Foo { has $!x }; say Foo.^attributes.perl
+10:06 <+p6eval> rakudo bb6df2: OUTPUTÂ«Method 'fields' not found for invocant of class ''â<90>¤  in main program body at line 20:/tmp/SZ6rBy_PBkâ<90>¤Â»
+10:06 <+p6eval> rakudo bb6df2: OUTPUTÂ«(Attribute.new(), )â<90>¤Â»
+10:06 <@moritz_> rakudo: class Foo { has $!x }; say ~Foo.^attributesÂ».name
+10:07 <@TimToady> well, yes, but it's also its own thing
+10:07 <+p6eval> rakudo bb6df2: OUTPUTÂ«$!xâ<90>¤Â»
+10:07 <@ingy> rakudo: class Foo { has $!x; has $!y }; say ~Foo.^attributesÂ».name
+10:07 <+p6eval> rakudo bb6df2: OUTPUTÂ«$!x $!yâ<90>¤Â»
+10:07 <@jnthn> TimToady: Could always make a low-levelish thing be macro-ish
+10:07 <@ingy> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributesÂ».name
+10:07 <@jnthn> .DEFINED
+10:07 <+p6eval> rakudo bb6df2: OUTPUTÂ«$!x $!yâ<90>¤Â»
+10:08 <@TimToady> cognominal: I have no idea what would happen if you instantiate a role with type Whatever, probably depends on how you use it in the role
+10:08 <@jnthn> TimToady: But...ew...that has issues too
+10:08 <@ingy> what's the diff between 'has $.x' and 'has $!x' ?
+10:08 <@moritz_> the former generates an accessor
+10:09 <@jnthn> http://perlcabal.org/syn/index_C.html # how did I not know about this
+10:09 <@TimToady> ingy: see the cheet sheet :)
+10:09 <@moritz_> the latter doesn't
+10:10 < tylercurtis> ingy: http://svn.pugscode.org/pugs/docs/Perl6/Cheatsheet/cheatsheet.txt
+10:14 <@ingy> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes
+10:14 <+p6eval> rakudo bb6df2: OUTPUTÂ«Attribute()<0x865c930> Attribute()<0x865ce70>â<90>¤Â»
+10:15 <@ingy> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes.WHAT
+10:15 <+p6eval> rakudo bb6df2: OUTPUTÂ«Parcel()â<90>¤Â»
+10:15 <@jnthn> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes>>.name
+10:15 <+p6eval> rakudo bb6df2: OUTPUTÂ«$!x $!yâ<90>¤Â»
+10:15 <@jnthn> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes>>.has_accessor
+10:15 <+p6eval> rakudo bb6df2: OUTPUTÂ«0 1â<90>¤Â»
+10:15 <@moritz_> there's a section in S12 about introspection, I believe
+10:15 <@ingy> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes[1]
+10:15 <+p6eval> rakudo bb6df2: OUTPUTÂ«Attribute()<0x25bb1f0>â<90>¤Â»
+10:16 <@ingy> rakudo: class Foo { has $!x; has $.y }; say ~Foo.^attributes[1].name
+10:16 <+p6eval> rakudo bb6df2: OUTPUTÂ«$!yâ<90>¤Â»
+
+15:59 < lue> rakudo: say Any.^methods(:local)
+
+16:26 <@ingy> rakudo: say Attribute.new(name => 'foo').name
+16:26 < p6eval> rakudo 94d01f: OUTPUT«foo␤»
+16:27 <@ingy> jnthn: how can I introspect the Attribute thing?
+16:27 <@tylercurtis> rakudo: say Attribute.new.HOW
+16:27 < p6eval> rakudo 94d01f: OUTPUT«P6metaclass()␤»
+16:27 <@tylercurtis> rakudo: say Attribute.new.^methods
+16:27 < p6eval> rakudo 94d01f: OUTPUT«Method 'methods' not found for invocant of class ''␤  in main program body at line 20:/tmp/7fBlJ522km␤»
+16:28 <@jnthn> ingy: At present, you can't.
+16:28 <@jnthn> ingy: The metaclass of Attribute doesn't support introspection.
+16:28 <@jnthn> (Yes, it sucks.)
+16:28 <@ingy> jnthn: can I use you to introspect it :)
+16:29 <@ingy> rakudo: class Foo {has $.x}; for Foo.new(x=>123).^attributes -> $a { say $a.name };
+16:29 < p6eval> rakudo 94d01f: OUTPUT«$!x␤»
+16:29 <@ingy> I want to get 123
+16:29 <@ingy> somehow
+16:30 <@jnthn> ingy: The reason Mu.perl sucks at the moment is because there's not a way to actually do that from Perl 6 space at the moment.
+16:31 <@jnthn> ingy: If you want to Do It Anyway then there is a hack, which you should certainly #RAKUDO
+16:31 -!- masonkramer [~masonkram@c-71-232-24-191.hsd1.ma.comcast.net] has joined #perl6
+16:31 <@jnthn> my $value = pir::getattribute__PPs($object, $a.name);
+

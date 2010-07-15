@@ -139,7 +139,11 @@ token test_expression {
 }
 
 token sub_expression {
-    <transform_call> | <data_point> | <quoted_string> | <constant>
+    <transform_call> | <data_point> | <expression_string> | <constant>
+}
+
+token expression_string {
+    <quoted_string>
 }
 
 token transform_call {
@@ -175,7 +179,8 @@ token argument_list {
 }
 
 token argument {
-    <sub_expression>
+    <quoted_string>
+#     <sub_expression>
 }
 
 token assertion_expression {

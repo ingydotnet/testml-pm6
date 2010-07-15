@@ -113,10 +113,17 @@ method transform_call($/) {
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(name => $transform_name);
     for $<argument_list><argument> -> $argument {
-        if $argument<sub_expression><quoted_string> {
-            $transform.args.push($argument<sub_expression><quoted_string>.ast);
+        if $argument<quoted_string> {
+            $transform.args.push($argument<quoted_string>.ast);
         }
     }
+    @insertion_stack[*-1].transforms.push($transform);
+}
+
+method expression_string($/) {
+    my $transform = TestML::Transform.new(name => 'String');
+    my $string = $<quoted_string>.ast;
+    $transform.args.push($string);
     @insertion_stack[*-1].transforms.push($transform);
 }
 

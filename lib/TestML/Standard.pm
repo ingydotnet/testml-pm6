@@ -36,11 +36,11 @@ our sub Point ($this, $name) {
 # multi sub Throw () {
 #     fail "Throw called without an error msg";
 # }
-# 
-# multi sub String (Str $string) {
-#     return $string;
-# }
-# 
+
+our sub String ($this, $string) {
+    return $string.Str;
+}
+
 # multi sub String ($xxx) {
 #     return $xxx.value;
 # }
