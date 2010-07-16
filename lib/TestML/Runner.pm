@@ -19,6 +19,8 @@ method run () {
     $.title();
     $.plan_begin();
 
+    use YAML;
+#     die dump($.doc.test.statements[0]);
     for $.doc.test.statements -> $statement {
         my @blocks = $statement.points.elems
             ?? $.select_blocks($statement.points)

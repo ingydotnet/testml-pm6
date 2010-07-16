@@ -7,13 +7,13 @@ use TestML::Document;
 my $doc;
 my $data;
 my $statement;
-my @insertion_stack;
+my @expression_stack;
 
 grammar TestML::Parser::Actions { ... }
 
 method parse($testml) {
     $doc = TestML::Document.new();
-    @insertion_stack = ();
+    @expression_stack = ();
     my $rc1 = TestML::Parser::Grammar.parse($testml, :actions(TestML::Parser::Actions));
     if (not $rc1) {
         die "Parse TestML failed";
@@ -95,42 +95,43 @@ method meta_value($/) {
 ### Test Section ###
 method test_statement_start($/) {
     $statement = TestML::Statement.new;
-    @insertion_stack.push($statement.expression);
+    @expression_stack.push($statement.expression);
 }
 
 method test_statement($/) {
     $doc.test.statements.push($statement);
+    @expression_stack.pop();
 }
 
-method data_point($/) {
+method point_call($/) {
     my $point_name = ~$0;
     my $transform = TestML::Transform.new(name => 'Point', args => [$point_name]);
-    @insertion_stack[*-1].transforms.push($transform);
+    @expression_stack[*-1].transforms.push($transform);
     $statement.points.push($point_name);
 }
 
 method transform_call($/) {
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(name => $transform_name);
-    for $<argument_list><argument> -> $argument {
+    for $<transform_argument_list><transform_argument> -> $argument {
         if $argument<quoted_string> {
             $transform.args.push($argument<quoted_string>.ast);
         }
     }
-    @insertion_stack[*-1].transforms.push($transform);
+    @expression_stack[*-1].transforms.push($transform);
 }
 
-method expression_string($/) {
+method string_call($/) {
     my $transform = TestML::Transform.new(name => 'String');
     my $string = $<quoted_string>.ast;
     $transform.args.push($string);
-    @insertion_stack[*-1].transforms.push($transform);
+    @expression_stack[*-1].transforms.push($transform);
 }
 
 method assertion_operator($/) {
-    @insertion_stack.pop();
+    @expression_stack.pop();
     $statement.assertion = TestML::Assertion.new(name => 'EQ');
-    @insertion_stack.push($statement.assertion.expression);
+    @expression_stack.push($statement.assertion.expression);
 }
 
 ### Data Section ###

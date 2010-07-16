@@ -24,6 +24,7 @@ regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs
 token line { <NON_BREAK>* <EOL> }
 token blank_line { <SPACE>* <EOL> }
 token comment { <HASH> <line> }
+token wspace { <SPACE> | <EOL> | <comment> }
 
 token unquoted_string {
     [
@@ -31,6 +32,11 @@ token unquoted_string {
         <!before <SPACE>* <EOL>>
         <ANY>
     ]+
+}
+
+token quoted_string {
+    <single_quoted_string> |
+    <double_quoted_string>
 }
 
 token single_quoted_string {
@@ -115,24 +121,16 @@ token meta_value {
     <quoted_string> | <unquoted_string>
 }
 
-token quoted_string {
-    <single_quoted_string> | <double_quoted_string>
-}
-
 
 #------------------------------------------------------------------------------#
 token test_section {
     [ <wspace> | <test_statement> ]*
 }
 
-token wspace {
-    <SPACE> | <EOL> | <comment>
-}
-
 token test_statement {
     <test_statement_start>
     <test_expression>
-    <assertion_expression>?
+    <assertion_call>?
     ';'
 }
 
@@ -143,7 +141,7 @@ token test_statement_start {
 token test_expression {
     <sub_expression>
     [
-        <!assertion_call>
+        <!assertion_function_call>
         <call_indicator>
         <sub_expression>
     ]*
@@ -151,17 +149,24 @@ token test_expression {
 
 token sub_expression {
     <transform_call> |
-    <data_point> |
-    <expression_string> |
-    <constant>
+    <point_call> |
+    <string_call> |
+    <constant_call>
 }
 
-token expression_string {
+token string_call {
     <quoted_string>
 }
 
 token transform_call {
-    <transform_name> '(' <wspace>* <argument_list> <wspace>* ')'
+    <transform_name>
+    '('
+    <transform_argument_list_start>
+    <wspace>*
+    <transform_argument_list>
+    <wspace>*
+    <transform_argument_list_stop>
+    ')'
 }
 
 token transform_name {
@@ -180,28 +185,31 @@ token call_indicator {
     <DOT> <wspace>* | <wspace>* <DOT>
 }
 
-token data_point {
+token point_call {
     <.STAR> ( <.LOWER> <.WORD>* )
 }
 
-token constant {
+token constant_call {
     <UPPER> <WORD>*
 }
 
-token argument_list {
-    [ <argument> [ <wspace>* ',' <wspace>* <argument> ]* ]?
+token transform_argument_list_start { <ALWAYS> }
+
+token transform_argument_list {
+    [ <transform_argument> [ <wspace>* ',' <wspace>* <transform_argument> ]* ]?
 }
 
-token argument {
-    <quoted_string>
-#     <sub_expression>
+token transform_argument_list_stop { <ALWAYS> }
+
+token transform_argument {
+    <test_expression>
 }
 
-token assertion_expression {
-    <assertion_operation> | <assertion_call>
+token assertion_call {
+    <assertion_operator_call> | <assertion_function_call>
 }
 
-token assertion_operation {
+token assertion_operator_call {
     <wspace>+ <assertion_operator> <wspace>+ <test_expression>
 }
 
@@ -209,13 +217,13 @@ token assertion_operator {
     '=='
 }
 
-token assertion_call {
-    <call_indicator> <assertion_name>
+token assertion_function_call {
+    <call_indicator> <assertion_function_name>
     '(' <wspace>* <test_expression> <wspace>* ')'
 }
 
-token assertion_name {
-    <UPPER>+
+token assertion_function_name {
+    'EQ'
 }
 
 token data_section {
@@ -285,3 +293,5 @@ token core_point_name {
 token user_point_name {
     <LOWER> <WORD>*
 }
+
+# vim: filetype=perl6
