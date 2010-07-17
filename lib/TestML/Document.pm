@@ -52,7 +52,7 @@ has $.expression = TestML::Expression.new;
 class TestML::Transform;
 
 has $.name;
-has $.args = [];
+has $.args;
 
 #-----------------------------------------------------------------------------
 class TestML::Document::Data;

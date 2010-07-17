@@ -19,7 +19,7 @@ method run () {
     $.title();
     $.plan_begin();
 
-    use YAML;
+#     use YAML;
 #     die dump($.doc.test.statements[0]);
     for $.doc.test.statements -> $statement {
         my @blocks = $statement.points.elems
@@ -71,21 +71,17 @@ method evaluate_expression ($expression, $block) {
 
     for $expression.transforms -> $transform {
         my $transform_name = $transform.name;
-#         say "transform_name > $transform_name";
 #         next if $context.error and $transform_name ne 'Catch';
         my $function = $.get_transform_function($transform_name);
         {
-#             $function(
-#                 $context,
-#                 $transform.args.map: {
-#                     ($_.WHAT eq 'TestML::Expression')
-#                     ?? $.evaluate_expression($_, $block)
-#                     !! $_
-#                 }
-#             );/
-
-            $context.value = $function($context, |@($transform.args));
-#             say "context.value > " ~ $context.value;
+            $context.value = $function(
+                $context, 
+                | $transform.args.map({
+                    $_ ~~ TestML::Expression
+                        ?? $.evaluate_expression($_, $block)
+                        !! $_
+                })
+            );
 
 #             CATCH {
 #                 $context.error($!);

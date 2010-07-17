@@ -1,3 +1,4 @@
+use v6;
 grammar TestML::Parser::Grammar::Base;
 
 regex ALWAYS    { <?>               } # Always match

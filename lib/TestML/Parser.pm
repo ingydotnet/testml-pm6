@@ -7,6 +7,7 @@ use TestML::Document;
 my $doc;
 my $data;
 my $statement;
+my $transform_arguments;
 my @expression_stack;
 
 grammar TestML::Parser::Actions { ... }
@@ -112,19 +113,33 @@ method point_call($/) {
 
 method transform_call($/) {
     my $transform_name = ~$<transform_name>;
-    my $transform = TestML::Transform.new(name => $transform_name);
-    for $<transform_argument_list><transform_argument> -> $argument {
-        if $argument<quoted_string> {
-            $transform.args.push($argument<quoted_string>.ast);
-        }
-    }
+    my $transform = TestML::Transform.new(
+        name => $transform_name,
+        args => $transform_arguments,
+    );
     @expression_stack[*-1].transforms.push($transform);
 }
 
+method transform_argument_list_start($/) {
+    @expression_stack.push(TestML::Expression.new);
+    $transform_arguments = [];
+}
+
+method transform_argument($/) {
+    $transform_arguments.push(@expression_stack.pop());
+    @expression_stack.push(TestML::Expression.new);
+}
+
+method transform_argument_list_stop($/) {
+    @expression_stack.pop();
+}
+
 method string_call($/) {
-    my $transform = TestML::Transform.new(name => 'String');
     my $string = $<quoted_string>.ast;
-    $transform.args.push($string);
+    my $transform = TestML::Transform.new(
+        name => 'String',
+        args => [ $string ],
+    );
     @expression_stack[*-1].transforms.push($transform);
 }
 
