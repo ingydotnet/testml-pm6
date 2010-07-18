@@ -16,6 +16,7 @@ regex WORD      { <[A..Za..z0..9_]> } # A "word" character
 regex DIGIT     { <[0..9]>          } # A numeric digit
 regex STAR      { '*'               } # An asterisk
 regex DOT       { '.'               } # A period character
+regex SEMI      { ';'               } # A semicolon
 regex HASH      { '#'               } # An octothorpe (or hash) character
 regex BACK      { '\\'              } # A backslash character
 regex SINGLE    { "'"               } # A single quote character
@@ -132,7 +133,7 @@ token test_statement {
     <test_statement_start>
     <test_expression>
     <assertion_call>?
-    [ ';' | <SEMICOLON_ERROR> ]
+    [ <SEMI> | <SEMICOLON_ERROR> ]
 }
 
 token test_statement_start {
