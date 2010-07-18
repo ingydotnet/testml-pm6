@@ -40,6 +40,14 @@ our sub Item ($this) {
     return @list.join("\n");
 }
 
+our sub Catch ($this) {
+    my $error = $this.error
+        or die "Catch called but no TestML error found";
+#     $error ~~ s/' at ' .* ' line ' \d+ '.' \n $//;
+    $this.error = Nil;
+    return $error;
+}
+
 # sub Select () {
 #     return (shift).value;
 # }
@@ -48,14 +56,6 @@ our sub Item ($this) {
 #     my $point = this.point
 #         or die "Raw called but there is no point";
 #     return this.block.points{$point};
-# }
-# 
-# sub Catch () {
-#     my $error = this.error
-#         or die "Catch called but no TestML error found";
-#     $error ~~ s/' at ' .* ' line ' \d+ '.' \n $//;
-#     this.error(Nil);
-#     return $error;
 # }
 # 
 # multi sub Throw ($msg) {

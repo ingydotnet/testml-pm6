@@ -19,8 +19,7 @@ method run () {
     $.title();
     $.plan_begin();
 
-#     use YAML;
-#     die dump($.doc.test.statements[0]);
+    use XXX;
     for $.doc.test.statements -> $statement {
         my @blocks = $statement.points.elems
             ?? $.select_blocks($statement.points)
@@ -71,9 +70,9 @@ method evaluate_expression ($expression, $block) {
 
     for $expression.transforms -> $transform {
         my $transform_name = $transform.name;
-#         next if $context.error and $transform_name ne 'Catch';
+        next if $context.error and $transform_name ne 'Catch';
         my $function = $.get_transform_function($transform_name);
-        {
+        try {
             $context.value = $function(
                 $context, 
                 | $transform.args.map({
@@ -83,10 +82,10 @@ method evaluate_expression ($expression, $block) {
                 })
             );
 
-#             CATCH {
-#                 $context.error($!);
-#                 $context.value = Nil;
-#             }
+            CATCH {
+                $context.error = "$!";
+                $context.value = Nil;
+            }
         }
     }
 

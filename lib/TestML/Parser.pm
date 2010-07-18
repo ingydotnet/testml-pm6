@@ -172,3 +172,9 @@ method data_block($/) {
     $doc.data.blocks.push($block);
 }
 
+method SEMICOLON_ERROR($/) {
+    die "You seem to be missing a semicolon";
+}
+method NO_META_TESTML_ERROR($/) {
+    die "No TestML meta directive found";
+}

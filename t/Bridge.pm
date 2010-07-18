@@ -14,3 +14,12 @@ our sub my_thing($this) {
 our sub combine($this, $suffix) {
     return $this.value ~ ' ' ~ $suffix.value;
 }
+
+our sub parse_testml($this) {
+    eval "use TestML::Parser";
+    TestML::Parser.parse($this.value);
+}
+
+our sub msg($this) {
+    return $this.value;
+}

@@ -3,7 +3,7 @@ grammar TestML::Parser::Grammar::Base;
 
 regex ALWAYS    { <?>               } # Always match
 regex ANY       { .                 } # Any unicode character
-regex SPACE     { <[\ \t]>          } # A space or tab character
+regex SPACE     { <blank>           } # A space or tab character
 regex BREAK     { \n                } # A newline character
 regex EOL       { \r? \n            } # A Unix or DOS line ending
 regex NON_BREAK { \N                } # Any character except newline
@@ -90,7 +90,7 @@ rule document {
 #------------------------------------------------------------------------------#
 rule meta_section {
     [ <comment> | <blank_line> ]*
-    <meta_testml_statement>
+    [ <meta_testml_statement> | <NO_META_TESTML_ERROR> ]
     [ <meta_statement> | <comment> | <blank_line> ]*
 }
 
@@ -132,7 +132,7 @@ token test_statement {
     <test_statement_start>
     <test_expression>
     <assertion_call>?
-    ';'
+    [ ';' | <SEMICOLON_ERROR> ]
 }
 
 token test_statement_start {
@@ -230,6 +230,9 @@ token assertion_function_name {
 token data_section {
     <ANY>*
 }
+
+token SEMICOLON_ERROR { <ALWAYS> }
+token NO_META_TESTML_ERROR { <ALWAYS> }
 
 
 #------------------------------------------------------------------------------#
