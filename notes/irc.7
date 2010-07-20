@@ -1,0 +1,60 @@
+09:52 <@ingy> I think I just made a huge discovery
+09:56 -!- rokoteko [~tkr@booyah.fi] has quit Changing host
+09:56 -!- rokoteko [~tkr@unaffiliated/tkr] has joined #perl6
+09:59 -!- masonkramer [~masonkram@c-71-232-24-191.hsd1.ma.comcast.net] has joined #perl6
+10:00 < tylercurtis> ingy: *.WHAT.say
+10:02 <@ingy> tylercurtis: I'm written a parser grammar system built on regexp that is curiously close to p6rules
+10:02 <@ingy> and used it on a couple perl and python projects
+10:02 <@ingy> cdent and testml, to be specific
+10:03 <@ingy> now that I've done a full project in p6rules...
+10:03 <@ingy> I am going to go back to the other stuff and make it more like p6rules
+10:04 <@ingy> and probably abstract it into its own acmeist parsing framework
+10:04 <@ingy> (this is still lead up to the discovery...)
+10:04 <@ingy> so my other stuff takes little regexp bits and combinates them into bigger rules
+10:05 <@ingy> but the combination is pretty much hand driven
+10:05 <@ingy> I'll find and example...
+10:06 <@ingy> http://github.com/ingydotnet/cdent/blob/master/src/grammar/atoms.yaml is the regexp atoms for cdent
+10:07 <@ingy> they get combinated in an obvious way into http://github.com/ingydotnet/cdent/blob/master/src/grammar/javascript.yaml (a grammar for cdent-javascript)
+10:08 <@ingy> as I was waking up (the only time that truly good ideas arrive) I realized that unless a rule has an action (by the same name in an action class) it can likely be 
+              combinated.
+10:09 <@ingy> 'combination' is turning several smaller regexps/rules into a bigger one
+10:10 <@ingy> in theory, the whole grammar could be combinated into one big (and fast!) regexp
+10:10 <@ingy> but that would be not so useful for grabbing parsed parts
+10:12 <@ingy> in my recent testml-pm6 implementation...
+10:12 -!- gbacon [~gbacon@c-71-207-241-81.hsd1.al.comcast.net] has joined #perl6
+10:12 <@ingy> I have over a hundred rules
+10:12 <@ingy> but only 16 actions
+10:13 <@ingy> so it would be nice, if under the hood, I there were only 16 regexps
+10:13 <@ingy> </discovery>
+10:13 <@ingy> time to hack and play with this hypothesis
+10:22 <@ingy> my hope is to bring most of the goodness of p6rules to all programming languages...
+10:22 <@ingy> (with 100 times the speed!)
+10:22 <@ingy> ;)
+10:31 <@ingy> tylercurtis: kwim?
+10:34 < masak> ingy: your discovery sounds a fair bit like LTM to me.
+10:35 <@ingy> masak: Last Twelve Months?
+10:36 < masak> ingy: my, are you in for a treat. :) Longest-Token Matching.
+10:36 < tylercurtis> ingy: yes. Sorry. I got distracted reading perl monks and blog posts and such and forgot to check IRC. Sounds like an interesting idea.  Although now that 
+                     masak mentions LTM, I think that there are plans to compile the declarative prefix of rules to automata, which would be pretty similar to your idea.
+10:36 <@ingy> thing is, I will have this all working by dinner using pcre!
+10:37 < masak> LTM is a name for a bunch of strategies for combining the academic view of regexes with the computer engineering view of regexes, getting the best out of both.
+10:37 < masak> ingy: if you're interested in LTM, I can recommend TimToady's Google Talk. it outlines the basic ideas.
+10:38 <@ingy> url?
+10:38 < tylercurtis> I don't know if any implementations actually do that yet(I'd guess not), but an implementation that did that would be even better than your idea because it 
+                     would take the parts of even rules with actions that are declarative and automatizes them. 
+10:38  * masak looks
+10:38 < masak> http://www.youtube.com/watch?v=JzIWdJVP-wo
+10:39 <@ingy> masak: I'll take a look after I convert testml-pm5 to everything I've learned on my p6 journey
+10:40 < masak> ingy: are you familiar with this page? http://swtch.com/~rsc/regexp/regexp1.html
+10:40 <@ingy> I've actually been doing this p5 combination stuff for over a year
+10:40 <@ingy> it's great. but p6rules is helping me polish it
+10:40  * ingy looks
+10:41 <@ingy> masak: very cool
+10:41 < masak> ingy: I'm still not sure how related the Thompson NFA and LTM are idea-wise.
+10:42 < masak> ingy: but I'm totally sold on the former, which I grok completely. I think one of the coolest experiments that can be done to GGE would be adorning it with a 
+               Thompson engine.
+10:43 <@ingy> masak: btw, I think do a p6rules parser for yaml with you would be great
+10:43 < masak> ingy: me too. let's do that sometime.
+10:43 <@ingy> now that I know I can backport it acmeistly
+10:43 < masak> schedule a few days, and just hack away.
+
