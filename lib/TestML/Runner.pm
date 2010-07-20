@@ -19,7 +19,6 @@ method run () {
     $.title();
     $.plan_begin();
 
-    use XXX;
     for $.doc.test.statements -> $statement {
         my @blocks = $statement.points.elems
             ?? $.select_blocks($statement.points)
