@@ -1,6 +1,6 @@
 use v6;
 
-module Bridge;
+module t::Bridge;
 
 our sub uppercase($this) {
     return $this.value.uc;
