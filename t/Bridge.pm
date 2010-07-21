@@ -7,7 +7,7 @@ our sub uppercase($this) {
 }
 
 our sub my_thing($this) {
-    my $str = $this.value.=subst(/\n$/, "");
+    my $str = $this.value.subst(/\n$/, "");
     return $str.split("\n").join(' - ');
 }
 
