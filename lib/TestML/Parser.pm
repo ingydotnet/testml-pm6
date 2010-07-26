@@ -10,7 +10,7 @@ my $statement;
 my $transform_arguments;
 my @expression_stack;
 
-grammar TestML::Parser::Actions { ... }
+class TestML::Parser::Actions { ... }
 
 method parse($testml) {
     $doc = TestML::Document.new();
