@@ -1,32 +1,28 @@
 use v6;
-grammar TestML::Parser::Grammar::Base;
+
+grammar TestML::Parser::Grammar;
+
+our $block_marker = '===';
+our $point_marker = '---';
 
 regex ALWAYS    { <?>               } # Always match
 regex ANY       { .                 } # Any unicode character
 regex SPACE     { <blank>           } # A space or tab character
-regex BREAK     { \n                } # A newline character
 regex EOL       { \r? \n            } # A Unix or DOS line ending
 regex NON_BREAK { \N                } # Any character except newline
-regex NON_SPACE_BREAK
-                { <![\ \n]>         } # Any character except space or newline
 regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
 regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
-regex ALPHANUM  { <[A..Za..z0..9]>  } # ASCII alphanumeric character
 regex WORD      { <[A..Za..z0..9_]> } # A "word" character
 regex DIGIT     { <[0..9]>          } # A numeric digit
 regex STAR      { '*'               } # An asterisk
 regex DOT       { '.'               } # A period character
 regex SEMI      { ';'               } # A semicolon
 regex HASH      { '#'               } # An octothorpe (or hash) character
-regex BACK      { '\\'              } # A backslash character
-regex SINGLE    { "'"               } # A single quote character
-regex DOUBLE    { '"'               } # A double quote character
-regex ESCAPE    { <[0nt]>           } # One of the escapable character IDs 
 
-token line { <NON_BREAK>* <EOL> }
+token line      { <NON_BREAK>* <EOL> }
 token blank_line { <SPACE>* <EOL> }
-token comment { <HASH> <line> }
-token wspace { <SPACE> | <EOL> | <comment> }
+token comment   { <HASH> <line> }
+token wspace    { <SPACE> | <EOL> | <comment> }
 
 token unquoted_string {
     [
@@ -78,15 +74,12 @@ token dq_escape { <["\\nrt]> }
 
 
 #------------------------------------------------------------------------------#
-grammar TestML::Parser::Grammar is TestML::Parser::Grammar::Base;
-
-rule TOP {^ <document> $}
-
-rule document {
+# This is the TOP rule:
+rule document {^
     <meta_section>
     <test_section>
     <data_section>?
-}
+$}
 
 #------------------------------------------------------------------------------#
 rule meta_section {
@@ -228,22 +221,8 @@ token assertion_function_name {
     'EQ'
 }
 
-token data_section {
-    <ANY>*
-}
-
-token SEMICOLON_ERROR { <ALWAYS> }
-token NO_META_TESTML_ERROR { <ALWAYS> }
-
 
 #------------------------------------------------------------------------------#
-grammar TestML::Parser::Grammar::DataSection is TestML::Parser::Grammar::Base;
-
-our $block_marker = '===';
-our $point_marker = '---';
-
-token TOP { ^ <data_section> $ }
-
 token data_section {
     <data_block>*
 }
@@ -298,3 +277,8 @@ token core_point_name {
 token user_point_name {
     <LOWER> <WORD>*
 }
+
+
+#------------------------------------------------------------------------------#
+token SEMICOLON_ERROR { <ALWAYS> }
+token NO_META_TESTML_ERROR { <ALWAYS> }

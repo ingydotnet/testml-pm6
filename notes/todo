@@ -1,3 +1,7 @@
++ Remove TOP rules.
++ Combine grammars into one.
++ Parse the Inline data in one go.
+
 - Make == (EQ) an assertion function:
   $left.EQ($right);
 - Add .HAS .OK .NOK etc.

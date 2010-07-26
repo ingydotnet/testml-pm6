@@ -7,28 +7,21 @@ use TestML::Document;
 
 class TestML::Parser;
 
-my $doc;
+my $document;
 my $data;
 my $statement;
 my $transform_arguments;
 my @expression_stack;
 
 method parse($testml) {
-    $doc = TestML::Document.new();
+    $document = TestML::Document.new();
     @expression_stack = ();
-    my $rc1 = TestML::Parser::Grammar.parse($testml, :actions(TestML::Parser::Actions));
-    if (not $rc1) {
-        die "Parse TestML failed";
-    }
-    $TestML::Parser::Grammar::DataSection::block_marker = $doc.meta.data<BlockMarker>;
-    $TestML::Parser::Grammar::DataSection::point_marker = $doc.meta.data<PointMarker>;
-    my $rc2 = TestML::Parser::Grammar::DataSection.parse(
-        $data, :actions(TestML::Parser::Actions)
-    );
-    if (not $rc2) {
-        die "Parse TestML Data failed";
-    }
-    return $doc;
+    TestML::Parser::Grammar.parse(
+        $testml,
+        :rule('document'),
+        :actions(TestML::Parser::Actions),
+    ) or die "Parse TestML failed";
+    return $document;
 }
 
 method parse_data ($parser) {
@@ -50,7 +43,6 @@ method parse_data ($parser) {
 class TestML::Parser::Actions;
 
 ### Base Section ###
-
 method quoted_string($/) {
     make ~$/.substr(1, -1);
 }
@@ -79,12 +71,17 @@ method sq_escape($/) {
 
 
 ### Meta Section ###
+method meta_section($/) {
+    $TestML::Parser::Grammar::block_marker = $document.meta.data<BlockMarker>;
+    $TestML::Parser::Grammar::point_marker = $document.meta.data<PointMarker>;
+}
+
 method meta_testml_statement($/) {
-    $doc.meta.data<TestML> = ~$<testml_version>;
+    $document.meta.data<TestML> = ~$<testml_version>;
 }
 
 method meta_statement($/) {
-    $doc.meta.data{~$<meta_keyword>} = $<meta_value>.ast;
+    $document.meta.data{~$<meta_keyword>} = $<meta_value>.ast;
 }
 
 method meta_value($/) {
@@ -101,7 +98,7 @@ method test_statement_start($/) {
 }
 
 method test_statement($/) {
-    $doc.test.statements.push($statement);
+    $document.test.statements.push($statement);
     @expression_stack.pop();
 }
 
@@ -150,6 +147,7 @@ method assertion_operator($/) {
     @expression_stack.push($statement.assertion.expression);
 }
 
+
 ### Data Section ###
 method data_section($/) {
     $data = ~$/;
@@ -170,7 +168,7 @@ method data_block($/) {
         }
         $block.points{$name} = $value;
     }
-    $doc.data.blocks.push($block);
+    $document.data.blocks.push($block);
 }
 
 method SEMICOLON_ERROR($/) {
