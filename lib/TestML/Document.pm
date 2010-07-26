@@ -1,5 +1,6 @@
 use v6;
 
+class TestML::Document { ... }
 class TestML::Document::Meta { ... }
 class TestML::Document::Tests { ... }
 class TestML::Expression { ... }

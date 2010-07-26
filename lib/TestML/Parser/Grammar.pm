@@ -298,5 +298,3 @@ token core_point_name {
 token user_point_name {
     <LOWER> <WORD>*
 }
-
-# vim: filetype=perl6

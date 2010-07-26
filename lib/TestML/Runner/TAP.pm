@@ -1,8 +1,9 @@
 use v6;
-use TestML::Runner;
-class TestML::Runner::TAP is TestML::Runner;
 
 use Test;
+use TestML::Runner;
+
+class TestML::Runner::TAP is TestML::Runner;
 
 method title () {
     if $.doc.meta.data<Title> -> $title {

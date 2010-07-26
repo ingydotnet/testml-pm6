@@ -1,9 +1,10 @@
 use v6;
-class TestML::Runner;
-
+class TestML::Runner { ... }
 class TestML::Context { ... }
 
 use TestML::Parser;
+
+class TestML::Runner;
 
 has $.bridge;
 has $.document;
@@ -135,5 +136,3 @@ has $.block is rw;
 has $.point is rw;
 has $.value is rw;
 has $.error is rw;
-
-# vim ft=perl6

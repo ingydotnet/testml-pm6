@@ -1,16 +1,17 @@
 use v6;
-class TestML::Parser;
+class TestML::Parser { ... }
+class TestML::Parser::Actions { ... }
 
 use TestML::Parser::Grammar;
 use TestML::Document;
+
+class TestML::Parser;
 
 my $doc;
 my $data;
 my $statement;
 my $transform_arguments;
 my @expression_stack;
-
-class TestML::Parser::Actions { ... }
 
 method parse($testml) {
     $doc = TestML::Document.new();
