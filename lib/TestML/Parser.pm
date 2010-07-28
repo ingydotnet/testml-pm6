@@ -7,40 +7,41 @@ use TestML::Document;
 
 class TestML::Parser;
 
-my $document;
-my $data;
-my $statement;
-my $transform_arguments;
-my @expression_stack;
-
 method parse($testml) {
-    $document = TestML::Document.new();
-    @expression_stack = ();
+    my $actions = TestML::Parser::Actions.new();
     TestML::Parser::Grammar.parse(
         $testml,
         :rule('document'),
-        :actions(TestML::Parser::Actions),
+        :actions($actions),
     ) or die "Parse TestML failed";
-    return $document;
+    return $actions.document;
 }
 
-method parse_data ($parser) {
-    my $builder = $parser.receiver;
-    my $document = $builder.document;
-    for $document.meta.data<Data> -> $file {
-        if $file eq '_' {
-            $parser.stream($builder.inline_data);
-        }
-        else {
-            $parser.open("self.base/$file");
-        }
-        $parser.parse;
-        $document.data.blocks.push(|$parser.receiver.blocks);
-    }
-}
+# TODO - No tests for external data files yet...
+# method parse_data ($parser) {
+#     my $builder = $parser.receiver;
+#     my $document = $builder.document;
+#     for $document.meta.data<Data> -> $file {
+#         if $file eq '_' {
+#             $parser.stream($builder.inline_data);
+#         }
+#         else {
+#             $parser.open("self.base/$file");
+#         }
+#         $parser.parse;
+#         $document.data.blocks.push(|$parser.receiver.blocks);
+#     }
+# }
 
 #------------------------------------------------------------------------------#
 class TestML::Parser::Actions;
+
+has $.document = TestML::Document.new;
+has $.data;
+has $.statement;
+has $.transform_arguments;
+has @.expression_stack = ();
+
 
 ### Base Section ###
 method quoted_string($/) {
@@ -72,16 +73,16 @@ method sq_escape($/) {
 
 ### Meta Section ###
 method meta_section($/) {
-    $TestML::Parser::Grammar::block_marker = $document.meta.data<BlockMarker>;
-    $TestML::Parser::Grammar::point_marker = $document.meta.data<PointMarker>;
+    $TestML::Parser::Grammar::block_marker = $.document.meta.data<BlockMarker>;
+    $TestML::Parser::Grammar::point_marker = $.document.meta.data<PointMarker>;
 }
 
 method meta_testml_statement($/) {
-    $document.meta.data<TestML> = ~$<testml_version>;
+    $.document.meta.data<TestML> = ~$<testml_version>;
 }
 
 method meta_statement($/) {
-    $document.meta.data{~$<meta_keyword>} = $<meta_value>.ast;
+    $.document.meta.data{~$<meta_keyword>} = $<meta_value>.ast;
 }
 
 method meta_value($/) {
@@ -93,43 +94,43 @@ method meta_value($/) {
 
 ### Test Section ###
 method test_statement_start($/) {
-    $statement = TestML::Statement.new;
-    @expression_stack.push($statement.expression);
+    $.statement = TestML::Statement.new;
+    @.expression_stack.push($.statement.expression);
 }
 
 method test_statement($/) {
-    $document.test.statements.push($statement);
-    @expression_stack.pop();
+    $.document.test.statements.push($.statement);
+    @.expression_stack.pop();
 }
 
 method point_call($/) {
     my $point_name = ~$0;
     my $transform = TestML::Transform.new(name => 'Point', args => [$point_name]);
-    @expression_stack[*-1].transforms.push($transform);
-    $statement.points.push($point_name);
+    @.expression_stack[*-1].transforms.push($transform);
+    $.statement.points.push($point_name);
 }
 
 method transform_call($/) {
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(
         name => $transform_name,
-        args => $transform_arguments,
+        args => $.transform_arguments,
     );
-    @expression_stack[*-1].transforms.push($transform);
+    @.expression_stack[*-1].transforms.push($transform);
 }
 
 method transform_argument_list_start($/) {
-    @expression_stack.push(TestML::Expression.new);
-    $transform_arguments = [];
+    @.expression_stack.push(TestML::Expression.new);
+    $.transform_arguments = [];
 }
 
 method transform_argument($/) {
-    $transform_arguments.push(@expression_stack.pop());
-    @expression_stack.push(TestML::Expression.new);
+    $.transform_arguments.push(@.expression_stack.pop());
+    @.expression_stack.push(TestML::Expression.new);
 }
 
 method transform_argument_list_stop($/) {
-    @expression_stack.pop();
+    @.expression_stack.pop();
 }
 
 method string_call($/) {
@@ -138,20 +139,20 @@ method string_call($/) {
         name => 'String',
         args => [ $string ],
     );
-    @expression_stack[*-1].transforms.push($transform);
+    @.expression_stack[*-1].transforms.push($transform);
 }
 
 method assertion_operator($/) {
-    @expression_stack.pop();
-    $statement.assertion = TestML::Assertion.new(name => 'EQ');
-    @expression_stack.push($statement.assertion.expression);
+    @.expression_stack.pop();
+    $.statement.assertion = TestML::Assertion.new(name => 'EQ');
+    @.expression_stack.push($.statement.assertion.expression);
 }
 
 
 ### Data Section ###
-method data_section($/) {
-    $data = ~$/;
-}
+# method data_section($/) {
+#     $.data = ~$/;
+# }
 
 method data_block($/) {
     my $block = TestML::Block.new;
@@ -168,7 +169,7 @@ method data_block($/) {
         }
         $block.points{$name} = $value;
     }
-    $document.data.blocks.push($block);
+    $.document.data.blocks.push($block);
 }
 
 method SEMICOLON_ERROR($/) {
