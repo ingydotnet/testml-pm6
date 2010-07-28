@@ -11,8 +11,8 @@ method parse($testml) {
     my $actions = TestML::Parser::Actions.new();
     TestML::Parser::Grammar.parse(
         $testml,
-        :rule('document'),
         :actions($actions),
+        :rule('document'),
     ) or die "Parse TestML failed";
     return $actions.document;
 }
@@ -38,8 +38,8 @@ class TestML::Parser::Actions;
 
 has $.document = TestML::Document.new;
 has $.data;
-has $.statement;
-has $.transform_arguments;
+has $.statement is rw;
+has $.transform_arguments is rw;
 has @.expression_stack = ();
 
 
