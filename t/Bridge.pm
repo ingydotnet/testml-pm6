@@ -11,8 +11,8 @@ our sub my_thing($this) {
     return $str.split("\n").join(' - ');
 }
 
-our sub combine($this, $suffix) {
-    return $this.value ~ ' ' ~ $suffix.value;
+our sub combine {
+    return @_.map({$_.value}).join(' ');
 }
 
 our sub parse_testml($this) {

@@ -110,6 +110,7 @@ method point_call($/) {
 }
 
 method transform_call($/) {
+    @expression_stack.pop();
     my $transform_name = ~$<transform_name>;
     my $transform = TestML::Transform.new(
         name => $transform_name,
@@ -118,7 +119,7 @@ method transform_call($/) {
     @expression_stack[*-1].transforms.push($transform);
 }
 
-method transform_argument_list_start($/) {
+method transform_name($/) {
     @expression_stack.push(TestML::Expression.new);
     $transform_arguments = [];
 }
@@ -126,10 +127,6 @@ method transform_argument_list_start($/) {
 method transform_argument($/) {
     $transform_arguments.push(@expression_stack.pop());
     @expression_stack.push(TestML::Expression.new);
-}
-
-method transform_argument_list_stop($/) {
-    @expression_stack.pop();
 }
 
 method string_call($/) {

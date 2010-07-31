@@ -155,13 +155,7 @@ token string_call {
 
 token transform_call {
     <transform_name>
-    '('
-    <transform_argument_list_start>
-    <wspace>*
-    <transform_argument_list>
-    <wspace>*
-    <transform_argument_list_stop>
-    ')'
+    <transform_argument_list>?
 }
 
 token transform_name {
@@ -191,7 +185,15 @@ token constant_call {
 token transform_argument_list_start { <ALWAYS> }
 
 token transform_argument_list {
-    [ <transform_argument> [ <wspace>* ',' <wspace>* <transform_argument> ]* ]?
+    '('
+    <wspace>*
+    <transform_arguments>?
+    <wspace>*
+    ')'
+}
+
+token transform_arguments {
+    <transform_argument> [ <wspace>* ',' <wspace>* <transform_argument> ]*
 }
 
 token transform_argument_list_stop { <ALWAYS> }
