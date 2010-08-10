@@ -6,10 +6,10 @@ our $block_marker = '===';
 our $point_marker = '---';
 
 regex ALWAYS    { <?>               } # Always match
-regex ANY       { .                 } # Any unicode character
-regex SPACE     { <blank>           } # A space or tab character
+regex ALL       { .                 } # Any unicode character
+regex ANY       { \N                } # Any character except newline
+regex BLANK     { <blank>           } # A space or tab character
 regex EOL       { \r? \n            } # A Unix or DOS line ending
-regex NON_BREAK { \N                } # Any character except newline
 regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
 regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
 regex WORD      { <[A..Za..z0..9_]> } # A "word" character
@@ -19,16 +19,16 @@ regex DOT       { '.'               } # A period character
 regex SEMI      { ';'               } # A semicolon
 regex HASH      { '#'               } # An octothorpe (or hash) character
 
-token line      { <NON_BREAK>* <EOL> }
-token blank_line { <SPACE>* <EOL> }
+token line      { <ANY>* <EOL> }
+token blank_line { <BLANK>* <EOL> }
 token comment   { <HASH> <line> }
-token wspace    { <SPACE> | <EOL> | <comment> }
+token wspace    { <BLANK> | <EOL> | <comment> }
 
 token unquoted_string {
     [
-        <!before <SPACE>+ <HASH>>
-        <!before <SPACE>* <EOL>>
-        <ANY>
+        <!before <BLANK>+ <HASH>>
+        <!before <BLANK>* <EOL>>
+        <ALL>
     ]+
 }
 
@@ -49,7 +49,7 @@ token sq_string {
         <!before \n>
         <!before \\>
         <!before \'>
-        <ANY>
+        <ALL>
     ]+
 }
 token sq_escape { <['\\]> }
@@ -67,7 +67,7 @@ token dq_string {
         <!before \n>
         <!before \\>
         <!before \">
-        <ANY>
+        <ALL>
     ]+
 }
 token dq_escape { <["\\nrt]> }
@@ -89,15 +89,15 @@ rule meta_section {
 }
 
 regex meta_testml_statement {
-    '%TestML:' <SPACE>+ <testml_version>
-    [ <SPACE>+ <comment> | <EOL> ]
+    '%TestML:' <BLANK>+ <testml_version>
+    [ <BLANK>+ <comment> | <EOL> ]
 }
 
 token testml_version { <.DIGIT> <.DOT> <.DIGIT>+ }
 
 regex meta_statement {
-    '%' <meta_keyword> ':' <SPACE>+ <meta_value>
-    [ <SPACE>+ <comment> | <EOL> ]
+    '%' <meta_keyword> ':' <BLANK>+ <meta_value>
+    [ <BLANK>+ <comment> | <EOL> ]
 }
 
 token meta_keyword {
@@ -234,7 +234,7 @@ token data_block {
 }
 
 token block_header {
-    <block_marker> [ <SPACE>+ <block_label> ]? <SPACE>* <EOL>
+    <block_marker> [ <BLANK>+ <block_label> ]? <BLANK>* <EOL>
 }
 
 token block_marker {
@@ -250,7 +250,7 @@ token block_point {
 }
 
 token lines_point {
-    <point_marker> <SPACE>+ <point_name> <SPACE>* <EOL>
+    <point_marker> <BLANK>+ <point_name> <BLANK>* <EOL>
     ([
         <!before <block_marker>>
         <!before <point_marker>>
@@ -259,8 +259,8 @@ token lines_point {
 }
 
 token phrase_point {
-    <point_marker> <SPACE>+ <point_name> ':' <SPACE>+
-    (<unquoted_string>) <SPACE>* <EOL>
+    <point_marker> <BLANK>+ <point_name> ':' <BLANK>+
+    (<unquoted_string>) <BLANK>* <EOL>
     [<blank_line> | <comment>]*
 }
 
