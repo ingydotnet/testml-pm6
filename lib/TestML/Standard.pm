@@ -1,9 +1,9 @@
 use v6;
 module TestML::Standard;
 
-our sub Point ($this, $name) {
-    $this.point = $name;
-    my $value = $this.block.points{$name};
+our sub Point ($context, $name) {
+    $context.point = $name;
+    my $value = $context.block.points{$name};
     $value.=subst(/\n+$/, "\n");
     if $value eq "\n" {
         $value = '';
@@ -11,48 +11,48 @@ our sub Point ($this, $name) {
     return $value;
 }
 
-our sub String ($this, $string) {
+our sub String ($context, $string) {
     my $str = ~$string.WHAT eq 'TestML::Context()' ?? $string.value !! $string;
     return $str.Str;
 }
 
-our sub True ($this) {
+our sub True ($context) {
     return Bool::True;
 }
 
-our sub False ($this) {
+our sub False ($context) {
     return Bool::False;
 }
 
-our sub List ($this) {
-    my Str $str = $this.value.Str;
+our sub List ($context) {
+    my Str $str = $context.value.Str;
     $str.=subst(/\n$/, '');
     return $str.split("\n");
 }
 
-our sub Join ($this, $separator) {
-    return @($this.value).join($separator.value);
+our sub Join ($context, $separator) {
+    return @($context.value).join($separator.value);
 }
 
-our sub Reverse ($this) {
-    return @($this.value).reverse;
+our sub Reverse ($context) {
+    return @($context.value).reverse;
 }
 
-our sub Sort ($this) {
-    return @($this.value).sort;
+our sub Sort ($context) {
+    return @($context.value).sort;
 }
 
-our sub Item ($this) {
-    my @list = @($this.value);
+our sub Item ($context) {
+    my @list = @($context.value);
     @list.push('');
     return @list.join("\n");
 }
 
-our sub Catch ($this) {
-    my $error = $this.error
+our sub Catch ($context) {
+    my $error = $context.error
         or die "Catch called but no TestML error found";
 #     $error ~~ s/' at ' .* ' line ' \d+ '.' \n $//;
-    $this.error = Nil;
+    $context.error = Nil;
     return $error;
 }
 
