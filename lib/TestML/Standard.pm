@@ -16,6 +16,14 @@ our sub String ($this, $string) {
     return $str.Str;
 }
 
+our sub True ($this) {
+    return Bool::True;
+}
+
+our sub False ($this) {
+    return Bool::False;
+}
+
 our sub List ($this) {
     my Str $str = $this.value.Str;
     $str.=subst(/\n$/, '');

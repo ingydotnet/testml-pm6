@@ -92,7 +92,7 @@ method meta_value($/) {
 
 
 ### Test Section ###
-method test_statement_start($/) {
+method try_test_statement($/) {
     $statement = TestML::Statement.new;
     @expression_stack.push($statement.expression);
 }
@@ -138,10 +138,30 @@ method string_call($/) {
     @expression_stack[*-1].transforms.push($transform);
 }
 
-method assertion_operator($/) {
-    @expression_stack.pop();
-    $statement.assertion = TestML::Assertion.new(name => 'EQ');
+method try_assertion_call($/) {
+    $statement.assertion = TestML::Assertion.new;
     @expression_stack.push($statement.assertion.expression);
+}
+
+method assertion_call($/) {
+    @expression_stack.pop();
+}
+
+method not_assertion_call($/) {
+    $statement.assertion = Nil;
+    @expression_stack.pop();
+}
+
+method assertion_eq($/) {
+    $statement.assertion.name = 'EQ';
+}
+
+method assertion_ok($/) {
+    $statement.assertion.name = 'OK';
+}
+
+method assertion_has($/) {
+    $statement.assertion.name = 'HAS';
 }
 
 

@@ -29,12 +29,18 @@ method run () {
                 $statement.expression,
                 $block,
             );
-            if $statement.assertion.expression {
-                my $right = $.evaluate_expression(
-                    $statement.assertion.expression,
-                    $block,
-                );
-                $.EQ($left, $right, $block.label);
+            if $statement.assertion -> $assertion {
+                my $method = 'assert_' ~ $assertion.name;
+                if $assertion.expression.transforms.elems {
+                    my $right = $.evaluate_expression(
+                        $statement.assertion.expression,
+                        $block,
+                    );
+                    self."$method"($left, $right, $block.label);
+                }
+                else {
+                    self."$method"($left, $block.label);
+                }
             }
         }
     }
@@ -70,6 +76,10 @@ method evaluate_expression ($expression, $block) {
 
     for $expression.transforms -> $transform {
         my $transform_name = $transform.name;
+        if $transform_name eq 'Not' {
+            $context.value = not $context.value;
+            next;
+        }
         next if $context.error and $transform_name ne 'Catch';
         my $function = $.get_transform_function($transform_name);
         try {

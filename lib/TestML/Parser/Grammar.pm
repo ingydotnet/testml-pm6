@@ -6,6 +6,7 @@ our $block_marker = '===';
 our $point_marker = '---';
 
 regex ALWAYS    { <?>               } # Always match
+regex NEVER     { <!>               } # Never match
 regex ALL       { .                 } # Any unicode character
 regex ANY       { \N                } # Any character except newline
 regex BLANK     { <blank>           } # A space or tab character
@@ -14,23 +15,22 @@ regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
 regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
 regex WORD      { <[A..Za..z0..9_]> } # A "word" character
 regex DIGIT     { <[0..9]>          } # A numeric digit
-regex STAR      { '*'               } # An asterisk
-regex DOT       { '.'               } # A period character
-regex SEMI      { ';'               } # A semicolon
-regex HASH      { '#'               } # An octothorpe (or hash) character
+regex PERCENT   { '%' }
+regex STAR      { '*' }
+regex COMMA     { ',' }
+regex DOT       { '.' }
+regex COLON     { ':' }
+regex SEMI      { ';' }
+regex HASH      { '#' }
+regex TILDE     { '~' }
+regex EQUAL     { '=' }
+regex LPAREN    { '(' }
+regex RPAREN    { ')' }
 
 token line      { <ANY>* <EOL> }
 token blank_line { <BLANK>* <EOL> }
 token comment   { <HASH> <line> }
 token wspace    { <BLANK> | <EOL> | <comment> }
-
-token unquoted_string {
-    [
-        <!before <BLANK>+ <HASH>>
-        <!before <BLANK>* <EOL>>
-        <ALL>
-    ]+
-}
 
 token quoted_string {
     <single_quoted_string> |
@@ -72,6 +72,14 @@ token dq_string {
 }
 token dq_escape { <["\\nrt]> }
 
+token unquoted_string {
+    [
+        <!before <BLANK>+ <HASH>>
+        <!before <BLANK>* <EOL>>
+        <ALL>
+    ]+
+}
+
 
 #------------------------------------------------------------------------------#
 # This is the TOP rule:
@@ -82,21 +90,21 @@ rule document {^
 $}
 
 #------------------------------------------------------------------------------#
-rule meta_section {
+token meta_section {
     [ <comment> | <blank_line> ]*
     [ <meta_testml_statement> | <NO_META_TESTML_ERROR> ]
     [ <meta_statement> | <comment> | <blank_line> ]*
 }
 
-regex meta_testml_statement {
-    '%TestML:' <BLANK>+ <testml_version>
+token meta_testml_statement {
+    <PERCENT> 'TestML' <COLON> <BLANK>+ <testml_version>
     [ <BLANK>+ <comment> | <EOL> ]
 }
 
 token testml_version { <.DIGIT> <.DOT> <.DIGIT>+ }
 
-regex meta_statement {
-    '%' <meta_keyword> ':' <BLANK>+ <meta_value>
+token meta_statement {
+    <PERCENT> <meta_keyword> <COLON> <BLANK>+ <meta_value>
     [ <BLANK>+ <comment> | <EOL> ]
 }
 
@@ -123,30 +131,31 @@ token test_section {
 }
 
 token test_statement {
-    <test_statement_start>
+    <try_test_statement>
     <test_expression>
-    <assertion_call>?
+    <assertion_call>? 
     [ <SEMI> | <SEMICOLON_ERROR> ]
 }
 
-token test_statement_start {
-    <ALWAYS>
-}
+token try_test_statement { <ALWAYS> }
 
 token test_expression {
     <sub_expression>
     [
-        <!assertion_function_call>
+        <!before <assertion_call_test>>
         <call_indicator>
         <sub_expression>
     ]*
 }
 
 token sub_expression {
-    <transform_call> |
     <point_call> |
     <string_call> |
-    <constant_call>
+    <transform_call>
+}
+
+token point_call {
+    <.STAR> ( <.LOWER> <.WORD>* )
 }
 
 token string_call {
@@ -174,53 +183,76 @@ token call_indicator {
     <DOT> <wspace>* | <wspace>* <DOT>
 }
 
-token point_call {
-    <.STAR> ( <.LOWER> <.WORD>* )
-}
-
-token constant_call {
-    <UPPER> <WORD>*
-}
-
-token transform_argument_list_start { <ALWAYS> }
-
 token transform_argument_list {
-    '('
-    <wspace>*
+    <LPAREN> <wspace>*
     <transform_arguments>?
-    <wspace>*
-    ')'
+    <wspace>* <RPAREN>
 }
 
 token transform_arguments {
-    <transform_argument> [ <wspace>* ',' <wspace>* <transform_argument> ]*
+    <transform_argument>
+    [ <wspace>* <COMMA> <wspace>* <transform_argument> ]*
 }
 
-token transform_argument_list_stop { <ALWAYS> }
-
 token transform_argument {
-    <test_expression>
+    <sub_expression>
+}
+
+token assertion_call_test {
+    <call_indicator> [ 'EQ' | 'OK' | 'HAS' ]
 }
 
 token assertion_call {
-    <assertion_operator_call> | <assertion_function_call>
+    [
+        <try_assertion_call>
+        [ <assertion_eq> | <assertion_ok> | <assertion_has> ]
+    ] | [ <not_assertion_call> <NEVER> ]
 }
 
-token assertion_operator_call {
-    <wspace>+ <assertion_operator> <wspace>+ <test_expression>
+token try_assertion_call { <ALWAYS> }
+
+token not_assertion_call { <ALWAYS> }
+
+token assertion_eq {
+    <assertion_operator_eq> | <assertion_function_eq>
 }
 
-token assertion_operator {
-    '=='
+token assertion_operator_eq {
+    <wspace>+ <EQUAL> <EQUAL> <wspace>+
+    <test_expression>
 }
 
-token assertion_function_call {
-    <call_indicator> <assertion_function_name>
-    '(' <wspace>* <test_expression> <wspace>* ')'
+token assertion_function_eq {
+    <call_indicator> 'EQ' <LPAREN>
+    <test_expression>
+    <RPAREN>
 }
 
-token assertion_function_name {
-    'EQ'
+token assertion_ok {
+    <assertion_function_ok>
+}
+
+token assertion_function_ok {
+    <call_indicator> 'OK' <empty_parens>?
+}
+
+token assertion_has {
+    <assertion_operator_has> | <assertion_function_has>
+}
+
+token assertion_operator_has {
+    <wspace>+ <TILDE> <TILDE> <wspace>+
+    <test_expression>
+}
+
+token assertion_function_has {
+    <call_indicator> 'HAS' <LPAREN>
+    <test_expression>
+    <RPAREN>
+}
+
+token empty_parens {
+    <LPAREN> <wspace>* <RPAREN>
 }
 
 
@@ -259,7 +291,7 @@ token lines_point {
 }
 
 token phrase_point {
-    <point_marker> <BLANK>+ <point_name> ':' <BLANK>+
+    <point_marker> <BLANK>+ <point_name> <COLON> <BLANK>+
     (<unquoted_string>) <BLANK>* <EOL>
     [<blank_line> | <comment>]*
 }
