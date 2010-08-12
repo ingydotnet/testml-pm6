@@ -142,7 +142,7 @@ token try_test_statement { <ALWAYS> }
 token test_expression {
     <sub_expression>
     [
-        <!before <assertion_call_test>>
+        <!assertion_call_test>
         <call_indicator>
         <sub_expression>
     ]*
@@ -284,8 +284,8 @@ token block_point {
 token lines_point {
     <point_marker> <BLANK>+ <point_name> <BLANK>* <EOL>
     ([
-        <!before <block_marker>>
-        <!before <point_marker>>
+        <!block_marker>
+        <!point_marker>
         <line>
     ]*)
 }
