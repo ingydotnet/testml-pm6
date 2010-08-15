@@ -21,19 +21,33 @@ method plan_begin () {
 }
 
 method assert_EQ ($left, $right, $label) {
+    my $left_type = $left.type;
+    my $right_type = $right.type;
+    $.throw(
+        "Assertion type error: left side is '$left_type' and right side is '$right_type'"
+    ) unless $left_type eq $right_type;
     my @label = $label ?? ($label) !! ();
+    return $.assert_EQ_list($left, $right, |@label)
+        if $left_type eq 'List';
     is($left.value, $right.value, |@label);
 }
 
 method assert_HAS ($left, $right, $label) {
-    my $assertion = (index $left.value, $right.value) >= 0;
+    my $left_type = $left.type;
+    my $right_type = $right.type;
+    $.throw(
+        "HAS assertion requires left and right side types be 'Str'.\n" ~
+        "Left side is '$left_type' and right side is '$right_type'"
+    ) unless $left_type eq $right_type;
     my @label = $label ?? ($label) !! ();
+    my $assertion = (index $left.value, $right.value) >= 0;
     ok($assertion, |@label);
 }
 
-method assert_OK ($left, $label) {
-    my $assertion = $left.value;
+method assert_OK ($context, $label) {
     my @label = $label ?? ($label) !! ();
+    my $assertion = ( $context.get_value_as_bool ^^ $context.not )
+        ?? Bool::True !! Bool::False;
     ok($assertion, |@label);
 }
 

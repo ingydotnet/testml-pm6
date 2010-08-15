@@ -56,6 +56,11 @@ has $.name;
 has $.args;
 
 #-----------------------------------------------------------------------------
+class TestML::String is TestML::Transform;
+
+has $.value;
+
+#-----------------------------------------------------------------------------
 class TestML::Document::Data;
 
 has $.blocks = [];

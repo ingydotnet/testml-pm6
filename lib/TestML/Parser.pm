@@ -131,9 +131,8 @@ method transform_argument($/) {
 
 method string_call($/) {
     my $string = $<quoted_string>.ast;
-    my $transform = TestML::Transform.new(
-        name => 'String',
-        args => [ $string ],
+    my $transform = TestML::String.new(
+        value => $string,
     );
     @expression_stack[*-1].transforms.push($transform);
 }
