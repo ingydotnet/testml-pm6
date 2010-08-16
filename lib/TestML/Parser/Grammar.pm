@@ -92,7 +92,7 @@ $}
 #------------------------------------------------------------------------------#
 token meta_section {
     [ <comment> | <blank_line> ]*
-    [ <meta_testml_statement> | <NO_META_TESTML_ERROR> ]
+    [ <meta_testml_statement> | <.panic: "No TestML meta directive found"> ]
     [ <meta_statement> | <comment> | <blank_line> ]*
 }
 
@@ -134,7 +134,7 @@ token test_statement {
     <try_test_statement>
     <test_expression>
     <assertion_call>? 
-    [ <SEMI> | <SEMICOLON_ERROR> ]
+    [ <SEMI> | <.panic: "You seem to be missing a semicolon"> ]
 }
 
 token try_test_statement { <ALWAYS> }
@@ -312,7 +312,3 @@ token user_point_name {
     <LOWER> <WORD>*
 }
 
-
-#------------------------------------------------------------------------------#
-token SEMICOLON_ERROR { <ALWAYS> }
-token NO_META_TESTML_ERROR { <ALWAYS> }
