@@ -1,0 +1,19 @@
+%TestML: 1.0
+%Plan: 2
+%BlockMarker: +++
+%PointMarker: ???
+
+
+*foo == *bar;
+
+
++++ Test One
+??? foo: Hello
+??? bar: Hello
+
+
++++ Test Two
+??? foo
+O HAI
+??? bar
+O HAI

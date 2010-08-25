@@ -1,0 +1,34 @@
+# A very basic TestML test document.
+
+%TestML: 1.0                    # This is the TestML spec version 
+%Title:  A Basic TestML File
+%Plan:   10
+
+*foo.List.Join(' - ')   == *bar;
+*foo.List.Reverse.Item  == *baz;
+*foo.List.Sort.Item     == *baz.List.Sort.Item;
+*foo.List.Item          == *foo;
+*foo.my_thing           == *bar;
+
+
+=== Test One
+--- foo
+a
+b
+c
+--- bar: a - b - c
+--- baz
+c
+b
+a
+
+=== Test Two
+--- foo
+I
+like
+pie!
+--- bar: I - like - pie!
+--- baz
+pie!
+like
+I
