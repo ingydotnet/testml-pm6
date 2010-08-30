@@ -1,0 +1,21 @@
+%TestML 1.0
+
+result = *syntax.parse;
+result.OK;
+result.Get('Doc.meta.TestML') == '1.0';
+
+===
+--- syntax:
+# Foo
+#Bar
+# %Stuff: xyz
+# %TestML: 9.9
+%TestML: 1.0 #Comment
+%Plan: 999
+# *foo == *bar;
+*bar == *foo;
+# === lala
+=== Test
+# Not a comment
+--- foo
+# not a comment, actual point data

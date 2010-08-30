@@ -1,0 +1,18 @@
+# A very basic TestML test document.
+
+%TestML 1.0
+
+Title = 'A Basic TestML File';
+Plan = 3;
+
+*text.my_lower == *lower;
+*text.my_upper == *upper;
+
+=== Test One
+--- text: I Like Pie
+--- lower: i like pie
+--- upper: I LIKE PIE
+
+=== Test Two
+--- text: I Love Lucy
+--- upper: I LOVE LUCY

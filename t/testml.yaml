@@ -1,3 +1,11 @@
-src: testml-tml
+src: testml
 lang: pm6
 bridge: t::Bridge
+skip:
+- comments
+- data
+- external1
+- external2
+- standard
+- syntax
+- topic

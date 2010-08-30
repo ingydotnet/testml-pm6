@@ -1,6 +1,0 @@
-%TestML: 1.0
-%Plan: 2
-
-'foo' == "foo";
-
-String('bar') == "bar";
