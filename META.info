@@ -1,0 +1,8 @@
+{
+    "name"        : "TestML",
+    "version"     : "*",
+    "description" : "A Generic Software Testing Meta Language",
+    "depends"     : [ ],
+    "source-type" : "git",
+    "source-url"  : "git://github.com/ingydotnet/testml-pm6.git"
+}
