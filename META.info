@@ -1,8 +1,17 @@
 {
     "name"        : "TestML",
     "version"     : "*",
+    "author"      : "Ingy döt Net <ingy@cpan.org>",
     "description" : "A Generic Software Testing Meta Language",
     "depends"     : [ ],
-    "source-type" : "git",
+    "provides"    : {
+        "TestML"                  : "lib/TestML.pm",
+        "TestML::Document"        : "lib/TestML/Document.pm",
+        "TestML::Parser"          : "lib/TestML/Parser.pm",
+        "TestML::Parser::Grammar" : "lib/TestML/Parser/Grammar.pm",
+        "TestML::Runner"          : "lib/TestML/Runner.pm",
+        "TestML::Runner::TAP"     : "lib/TestML/Runner/TAP.pm",
+        "TestML::Standard"        : "lib/TestML/Standard.pm"
+    },
     "source-url"  : "git://github.com/ingydotnet/testml-pm6.git"
 }
