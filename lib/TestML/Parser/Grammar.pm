@@ -312,3 +312,5 @@ token user_point_name {
     <LOWER> <WORD>*
 }
 
+
+method panic($err) { die $err }
