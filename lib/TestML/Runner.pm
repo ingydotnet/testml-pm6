@@ -116,12 +116,14 @@ class TestML::Runner {
                 );
 
                 CATCH {
-                    $context.type = 'Error';
-                    $context.error = "$!";
-                    $context.value = Nil;
+                    default {
+                        $context.type = 'Error';
+                        $context.error = $_.message;
+                        $context.value = Nil;
+                    }
                 }
             }
-            if not $context._set {
+            if !$context._set && !$context.error {
                 $context.value = $value;
             }
         }
@@ -160,6 +162,10 @@ class TestML::Runner {
             require ::($module_name);
         }
         return @modules;
+    }
+
+    method throw($msg) {
+        die $msg;
     }
 }
 
