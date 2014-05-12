@@ -42,7 +42,7 @@ class TestML::Parser {
 class TestML::Parser::Actions {
     ### Base Section ###
     method quoted_string($/) {
-        make ~$/.substr(1, -1);
+        make ~$/.substr(1, *-1);
     }
 
     method unquoted_string($/) {
@@ -170,7 +170,7 @@ class TestML::Parser::Actions {
     method data_block($/) {
         my $block = TestML::Block.new;
         $block.label = ~$<block_header><block_label>;
-        for $<block_point> -> $point {
+        for $<block_point>.list -> $point {
             my ($name, $value);
             if $point<phrase_point> {
                 $name = ~$point<phrase_point><point_name>;

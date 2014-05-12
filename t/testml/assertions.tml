@@ -1,6 +1,5 @@
-%TestML 1.0
-
-Plan = 6;
+%TestML: 1.0
+%Plan: 6
 
 Label = 'EQ tests';
 'The cat in the hat'.EQ('The cat in the hat');

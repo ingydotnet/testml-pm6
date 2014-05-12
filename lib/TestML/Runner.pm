@@ -33,9 +33,9 @@ class TestML::Runner {
         $.title();
         $.plan_begin();
 
-        for $.doc.test.statements -> $statement {
+        for $.doc.test.statements.list -> $statement {
             my @blocks = $statement.points.elems
-                ?? $.select_blocks($statement.points)
+                ?? $.select_blocks($statement.points).list
                 !! TestML::Block.new; !1;
             for @blocks -> $block {
                 my $left = $.evaluate_expression(
@@ -65,18 +65,18 @@ class TestML::Runner {
 
         for @($.doc.data.blocks) -> $block {
             my %points = $block.points;
-            next if %points.exists('SKIP');
+            next if %points<SKIP> :exists;
             my $next = 0;
             for @($points) -> $point {
-                $next = 1 unless %points.exists($point);
+                $next = 1 unless %points{$point} :exists;
             }
             next if $next;
-            if %points.exists('ONLY') {
+            if %points<ONLY> :exists {
                 @selected = ($block);
                 last;
             }
             @selected.push($block);
-            last if %points.exists('LAST');
+            last if %points<LAST> :exists;
         }
         return @selected;
     }
@@ -89,7 +89,7 @@ class TestML::Runner {
             :type('None'),
         );
 
-        for $expression.transforms -> $transform {
+        for $expression.transforms.list -> $transform {
             my $transform_name = $transform.name;
             my $what = $transform.WHAT;
             if ("$what" eq 'TestML::String()') {
@@ -133,9 +133,9 @@ class TestML::Runner {
     }
 
     method get_transform_function($name) {
-        my @modules = $.transform_modules;
+        my @modules = $.transform_modules.list;
         for @modules -> $module_name {
-            my $function = eval "&$module_name" ~ "::$name";
+            my $function = EVAL "&$module_name" ~ "::$name";
             return $function if $function;
         }
         die "Can't locate function '$name'";
@@ -156,10 +156,7 @@ class TestML::Runner {
             @modules.push($.bridge);
         }
         for @modules -> $module_name {
-            eval "use $module_name";
-            my $module = eval($module_name);
-            die "Can't use $module_name " ~ ~@*INC
-                unless ~$module;
+            require ::($module_name);
         }
         return @modules;
     }

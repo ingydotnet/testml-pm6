@@ -1,7 +1,6 @@
-%TestML 1.0
-
-Title = 'TestML with no data section';
-Plan = 2;
+%TestML: 1.0
+%Title: 'TestML with no data section'
+%Plan: 2
 
 'foo' == "foo";
 
