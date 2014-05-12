@@ -1,8 +1,7 @@
-%TestML 1.0
-%BlockMarker +++
-%PointMarker ???
-
-Plan = 2;
+%TestML: 1.0
+%BlockMarker: +++
+%PointMarker: ???
+%Plan: 2
 
 *foo == *bar;
 

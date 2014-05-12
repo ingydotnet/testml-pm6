@@ -1,4 +1,4 @@
-%TestML 1.0
+%TestML: 1.0
 
 result = *syntax.parse;
 result.OK;

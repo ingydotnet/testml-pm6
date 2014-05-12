@@ -1,21 +1,17 @@
-%TestML 1.0
+%TestML: 1.0
+%Plan: 6
 
-Plan = 9;
-
-Label = 'Boolean OK';
 True.OK;
 False.Not.OK;
 True.Not.Not.OK;
 
-Label = 'String OK';
 'Text'.OK;
 ''.Not.OK;
 '0'.OK;
 
-Label = 'Number OK';
-0.Not.OK;
-1.OK;
-42.OK;
+#0.Not.OK;
+#1.OK;
+#42.OK;
 
 # XXX List context not yet supported.
 # List("x\ny").OK;

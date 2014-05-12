@@ -19,8 +19,8 @@ our sub combine {
 }
 
 our sub parse_testml($context) {
-    eval "use TestML::Parser";
-    TestML::Parser.parse($context.value);
+    require TestML::Parser;
+    ::('TestML::Parser').parse($context.value);
 }
 
 our sub msg($context) {

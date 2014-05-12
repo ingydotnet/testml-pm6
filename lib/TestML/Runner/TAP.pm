@@ -20,6 +20,10 @@ method plan_begin () {
     }
 }
 
+method plan_end () {
+
+}
+
 method assert_EQ ($left, $right, $label) {
     my $left_type = $left.type;
     my $right_type = $right.type;

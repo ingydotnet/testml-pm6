@@ -48,7 +48,7 @@ is $expression.transforms[0].name, 'Point', 'First sub is a Point';
 is $expression.transforms[0].args[0], 'output', 'Point name is "output"';
 
 is $match.data.blocks.elems, 2, 'Two data blocks';
-my ($block1, $block2) = $match.data.blocks;
+my ($block1, $block2) = $match.data.blocks.list;
 is $block1.label, 'Test mixed case string', 'Block 1 label ok';
 is $block1.points<input>, 'I Like Pie', 'Block 1, input point';
 is $block1.points<output>, 'I LIKE PIE', 'Block 1, output point';

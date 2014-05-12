@@ -1,6 +1,5 @@
-%TestML 1.0
-
-Plan = 3;
+%TestML: 1.0
+%Plan: 3
 
 *testml_stream.parse_testml().Catch().msg() ~~ *error;
 

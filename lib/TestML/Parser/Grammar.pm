@@ -9,8 +9,8 @@ regex ALWAYS    { <?>               } # Always match
 regex NEVER     { <!>               } # Never match
 regex ALL       { .                 } # Any unicode character
 regex ANY       { \N                } # Any character except newline
-regex BLANK     { <blank>           } # A space or tab character
-regex EOL       { \r? \n            } # A Unix or DOS line ending
+regex BLANK     { \h                } # A space or tab character
+regex EOL       { \n                } # A Unix or DOS line ending
 regex LOWER     { <[a..z]>          } # Lower case ASCII alphabetic character
 regex UPPER     { <[A..Z]>          } # Upper case ASCII alphabetic character
 regex WORD      { <[A..Za..z0..9_]> } # A "word" character
@@ -92,7 +92,7 @@ $}
 #------------------------------------------------------------------------------#
 token meta_section {
     [ <comment> | <blank_line> ]*
-    [ <meta_testml_statement> | <.panic: "No TestML meta directive found"> ]
+    [ <meta_testml_statement> | {die "No TestML meta directive found"} ]
     [ <meta_statement> | <comment> | <blank_line> ]*
 }
 
@@ -134,7 +134,7 @@ token test_statement {
     <try_test_statement>
     <test_expression>
     <assertion_call>? 
-    [ <SEMI> | <.panic: "You seem to be missing a semicolon"> ]
+    [ <SEMI> | {die "You seem to be missing a semicolon"} ]
 }
 
 token try_test_statement { <ALWAYS> }
