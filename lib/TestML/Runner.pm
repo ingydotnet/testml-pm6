@@ -91,8 +91,9 @@ class TestML::Runner {
 
         for $expression.transforms.list -> $transform {
             my $transform_name = $transform.name;
-            my $what = $transform.WHAT;
-            if ("$what" eq 'TestML::String()') {
+            #my $what = $transform.WHAT;
+            #if ("$what" eq 'TestML::String()') {
+            if $transform ~~ TestML::String {
                 $context.set('Str', $transform.value);
                 next;
             }
