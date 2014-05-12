@@ -1,9 +1,6 @@
 # A very basic TestML test document.
 
-%TestML 1.0
-
-Title = 'A Basic TestML File';
-Plan = 3;
+%TestML: 1.0
 
 *text.my_lower == *lower;
 *text.my_upper == *upper;
