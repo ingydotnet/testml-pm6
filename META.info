@@ -13,5 +13,5 @@
         "TestML::Runner::TAP"     : "lib/TestML/Runner/TAP.pm",
         "TestML::Standard"        : "lib/TestML/Standard.pm"
     },
-    "source-url"  : "git://github.com/ingydotnet/testml-pm6.git"
+    "source-url"  : "git://github.com/perl6-community-modules/testml-pm6.git"
 }
