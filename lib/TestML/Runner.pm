@@ -64,7 +64,7 @@ class TestML::Runner {
         my @selected;
 
         for @($.doc.data.blocks) -> $block {
-            my %points = $block.points;
+            my %points = %($block.points);
             next if %points<SKIP> :exists;
             my $next = 0;
             for @($points) -> $point {
