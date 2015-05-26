@@ -3,7 +3,7 @@ use v6;
 use Test;
 use TestML::Runner;
 
-class TestML::Runner::TAP is TestML::Runner;
+unit class TestML::Runner::TAP is TestML::Runner;
 
 method title () {
     if $.doc.meta.data<Title> -> $title {

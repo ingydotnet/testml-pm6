@@ -1,5 +1,5 @@
 use v6;
-module TestML::Standard;
+unit module TestML::Standard;
 
 our sub Point($context, $name) {
     $context.point = $name;

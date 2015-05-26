@@ -1,6 +1,6 @@
 use v6;
 
-grammar TestML::Parser::Grammar;
+unit grammar TestML::Parser::Grammar;
 
 our $block_marker = '===';
 our $point_marker = '---';
