@@ -7,7 +7,7 @@ use TestML::Parser;
 class TestML::Runner {
     has $.bridge;
     has $.document;
-    has $.base = $*PROGRAM_NAME.flip.subst(/.*?'/'/, '').flip;   #'RAKUDO
+    has $.base = $*PROGRAM-NAME.flip.subst(/.*?'/'/, '').flip;   #'RAKUDO
     has $!doc;
     has $!transform_modules;
 
