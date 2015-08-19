@@ -63,7 +63,7 @@ class TestML::Parser::Actions {
     method sq_string($/) { make ~$/ }
 
     method sq_escape($/) {
-        my %h = '\\' => "\\",
+        my %h = '\\' => "\\";
         make %h{~$/};
     }
 
