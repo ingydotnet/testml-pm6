@@ -138,6 +138,7 @@ class TestML::Runner {
     method get_transform_function($name) {
         my @modules = $.transform_modules.list;
         for @modules -> $module_name {
+            use MONKEY-SEE-NO-EVAL;
             my $function = EVAL "&$module_name" ~ "::$name";
             return $function if $function;
         }
