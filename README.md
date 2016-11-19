@@ -12,6 +12,9 @@ or `zef`
 
     zef install TestML
 
-## COPYRIGHT
 
-Copyright 2010. Ingy döt Net.
+## Copyright
+
+Copyright 2010-2013. Ingy döt Net.
+
+Copyright 2014-2016 The Perl6 Community.
