@@ -2,18 +2,15 @@
 
 This is the Perl 6 implementation of TestML.
 
-## INSTALLATION
+## Installation
 
-Use `ufo`. http://github.com/masak/ufo
+To install TestML, simply use either `panda`
 
-    > cd testml-pm6
-    > ufo
-    > make test
-    > make install
+    panda install TestML
 
-## NOTE
+or `zef`
 
-If you got this from `git`, and you want to run `make test` on TestML itself, you'll need to grab a copy of the TestML Common Test Suite from http://github.com/ingydotnet/testml-tml.
+    zef install TestML
 
 ## COPYRIGHT
 
