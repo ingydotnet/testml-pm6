@@ -1,8 +1,72 @@
 use v6;
-class TestML::Runner { ... }
-class TestML::Context { ... }
 
 use TestML::Parser;
+
+class TestML::Context {
+    has $.document is rw;
+    has $.block is rw;
+    has $.point is rw;
+    has $.value is rw;
+    has $.error is rw;
+    has $.type is rw;
+    has $.not is rw;
+    has $._set is rw;
+
+    method set($type, $value) {
+        $.throw("Invalid context type '$type'")
+            unless $type ~~ /^[None|Str|Num|Bool|List]$/;
+        $.type = $type;
+        $.value = $value;
+        $._set = 1;
+    }
+
+    # TODO 
+    method get_value_if_type(*@types) {
+        my $type = $.type;
+        return $.value if @types.grep($type).Bool;
+        $.throw("context object is type '$type', but '@types' required");
+    }
+
+    method get_value_as_str() {
+        my $type = $.type;
+        my $value = $.value;
+        return
+            $type eq 'Str' ?? $value !!
+            $type eq 'List' ?? $value.join("") !!
+            $type eq 'Bool' ?? $value ?? '1' !! '' !!
+            $type eq 'Num' ?? "$value" !!
+            $type eq 'None' ?? '' !!
+            $.throw("Str type error: '$type'");
+    }
+
+    method get_value_as_num() {
+        my $type = $.type;
+        my $value = $.value;
+        return
+            $type eq 'Str' ?? $value + 0 !!
+            $type eq 'List' ?? $value.elems !!
+            $type eq 'Bool' ?? $value ?? 1 !! 0 !!
+            $type eq 'Num' ?? $value !!
+            $type eq 'None' ?? 0 !!
+            $.throw("Num type error: '$type'");
+    }
+
+    method get_value_as_bool() {
+        my $type = $.type;
+        my $value = $.value;
+        return
+            $type eq 'Str' ?? $value.chars.Bool !!
+            $type eq 'List' ?? $value.elems.Bool !!
+            $type eq 'Bool' ?? $value !!
+            $type eq 'Num' ?? $value.Bool !!
+            $type eq 'None' ?? Bool::False !!
+            $.throw("Bool type error: '$type'");
+    }
+
+    method throw($msg) {
+        die $msg;
+    }
+}
 
 class TestML::Runner {
     has $.bridge;
@@ -36,7 +100,7 @@ class TestML::Runner {
         for $.doc.test.statements.list -> $statement {
             my @blocks = $statement.points.elems
                 ?? $.select_blocks($statement.points).list
-                !! TestML::Block.new; !1;
+                !! TestML::Block.new;
             for @blocks -> $block {
                 my $left = $.evaluate_expression(
                     $statement.expression,
@@ -91,8 +155,6 @@ class TestML::Runner {
 
         for $expression.transforms.list -> $transform {
             my $transform_name = $transform.name;
-            #my $what = $transform.WHAT;
-            #if ("$what" eq 'TestML::String()') {
             if $transform ~~ TestML::String {
                 $context.set('Str', $transform.value);
                 next;
@@ -163,72 +225,6 @@ class TestML::Runner {
             require ::($module_name);
         }
         return @modules;
-    }
-
-    method throw($msg) {
-        die $msg;
-    }
-}
-
-class TestML::Context {
-    has $.document is rw;
-    has $.block is rw;
-    has $.point is rw;
-    has $.value is rw;
-    has $.error is rw;
-    has $.type is rw;
-    has $.not is rw;
-    has $._set is rw;
-
-    method set($type, $value) {
-        $.throw("Invalid context type '$type'")
-            unless $type ~~ /^[None|Str|Num|Bool|List]$/;
-        $.type = $type;
-        $.value = $value;
-        $._set = 1;
-    }
-
-    # TODO 
-    method get_value_if_type(*@types) {
-        my $type = $.type;
-        return $.value if @types.grep($type).Bool;
-        $.throw("context object is type '$type', but '@types' required");
-    }
-
-    method get_value_as_str() {
-        my $type = $.type;
-        my $value = $.value;
-        return
-            $type eq 'Str' ?? $value !!
-            $type eq 'List' ?? $value.join("") !!
-            $type eq 'Bool' ?? $value ?? '1' !! '' !!
-            $type eq 'Num' ?? "$value" !!
-            $type eq 'None' ?? '' !!
-            $.throw("Str type error: '$type'");
-    }
-
-    method get_value_as_num() {
-        my $type = $.type;
-        my $value = $.value;
-        return
-            $type eq 'Str' ?? $value + 0 !!
-            $type eq 'List' ?? $value.elems !!
-            $type eq 'Bool' ?? $value ?? 1 !! 0 !!
-            $type eq 'Num' ?? $value !!
-            $type eq 'None' ?? 0 !!
-            $.throw("Num type error: '$type'");
-    }
-
-    method get_value_as_bool() {
-        my $type = $.type;
-        my $value = $.value;
-        return
-            $type eq 'Str' ?? $value.chars.Bool !!
-            $type eq 'List' ?? $value.elems.Bool !!
-            $type eq 'Bool' ?? $value !!
-            $type eq 'Num' ?? $value.Bool !!
-            $type eq 'None' ?? Bool::False !!
-            $.throw("Bool type error: '$type'");
     }
 
     method throw($msg) {
