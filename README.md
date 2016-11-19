@@ -1,5 +1,7 @@
 # TestML
 
+[![Build Status](https://travis-ci.org/perl6-community-modules/testml-pm6.svg?branch=master)](https://travis-ci.org/perl6-community-modules/testml-pm6)
+
 This is the Perl 6 implementation of TestML.
 
 ## Installation
