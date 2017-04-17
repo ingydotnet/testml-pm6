@@ -200,8 +200,8 @@ class TestML::Runner {
     method get_transform_function($name) {
         my @modules = $.transform_modules.list;
         for @modules -> $module_name {
-            use MONKEY-SEE-NO-EVAL;
-            my $function = EVAL "&$module_name" ~ "::$name";
+            require ::($module_name);
+            my $function = ::($module_name)::('&'~$name);
             return $function if $function;
         }
         die "Can't locate function '$name'";
@@ -220,9 +220,6 @@ class TestML::Runner {
         );
         if $.bridge {
             @modules.push($.bridge);
-        }
-        for @modules -> $module_name {
-            require ::($module_name);
         }
         return @modules;
     }
