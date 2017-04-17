@@ -19,7 +19,7 @@ our sub combine {
 }
 
 our sub parse_testml($context) {
-    require TestML::Parser;
+    (require TestML::Parser).so;
     ::('TestML::Parser').parse($context.value);
 }
 

@@ -200,7 +200,7 @@ class TestML::Runner {
     method get_transform_function($name) {
         my @modules = $.transform_modules.list;
         for @modules -> $module_name {
-            require ::($module_name);
+            (require ::($module_name)).so;
             my $function = ::($module_name)::('&'~$name);
             return $function if $function;
         }
