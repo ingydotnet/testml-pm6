@@ -2,4 +2,4 @@ use v6;
 
 unit module TestML;
 
-our $*VERSION = '0.01';
+our $*VERSION = '0.2.0';

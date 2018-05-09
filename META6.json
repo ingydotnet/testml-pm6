@@ -1,11 +1,15 @@
 {
-    "perl"        : "6.*",
-    "name"        : "TestML",
-    "version"     : "*",
-    "author"      : "Ingy döt Net <ingy@cpan.org>",
-    "description" : "A Generic Software Testing Meta Language",
-    "depends"     : [ ],
-    "provides"    : {
+    "perl"          : "6.*",
+    "name"          : "TestML",
+    "version"       : "0.2.0",
+    "author"        : "Ingy döt Net <ingy@cpan.org>",
+    "description"   : "A Generic Software Testing Meta Language",
+    "tags"	    : ["test", "languages", "framework"],
+    "depends"       : [ ],
+    "build-depends" : [ ],
+    "test-depends"  : [ ],
+
+    "provides"      : {
         "TestML"                  : "lib/TestML.pm",
         "TestML::Document"        : "lib/TestML/Document.pm",
         "TestML::Parser"          : "lib/TestML/Parser.pm",
@@ -14,5 +18,11 @@
         "TestML::Runner::TAP"     : "lib/TestML/Runner/TAP.pm",
         "TestML::Standard"        : "lib/TestML/Standard.pm"
     },
-    "source-url"  : "git://github.com/ingydotnet/testml-pm6.git"
+
+    "auth"          : "github:ingydotnet",
+    "support"       : {
+        "bugtracker" : "https://github.com/ingydotnet/testml-pm6/issues",
+        "source"     : "https://github.com/ingydotnet/testml-pm6/tree/0.2.0"
+    },
+    "source-url"    : "git://github.com/ingydotnet/testml-pm6/archive/0.2.0.zip"
 }
